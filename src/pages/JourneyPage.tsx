@@ -55,7 +55,11 @@ export function JourneyPage() {
             Acompanhe resultados e próximos passos com clareza.
           </p>
         </div>
-        <MockImage label="Paciente IC" className="h-20 w-16 flex-none" />
+        <MockImage
+          label="Paciente IC"
+          src="/mockups/journey-banner.jpg"
+          className="h-20 w-16 flex-none"
+        />
       </section>
     </div>
   );

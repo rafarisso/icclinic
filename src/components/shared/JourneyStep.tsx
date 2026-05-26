@@ -48,7 +48,11 @@ export function JourneyStep({ step, isLast = false }: JourneyStepProps) {
         ) : null}
       </div>
       <div className="flex flex-1 gap-3 rounded-ic-lg bg-ic-cream-light p-3 shadow-ic-card">
-        <MockImage label={step.name} className="h-[78px] w-[78px] flex-none" />
+        <MockImage
+          label={step.name}
+          src={step.thumbnailUrl}
+          className="h-[78px] w-[78px] flex-none rounded-full"
+        />
         <div className="min-w-0">
           <Badge
             variant={

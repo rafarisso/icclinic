@@ -1,4 +1,4 @@
-import { CalendarDays, Edit3, MessageCircle, Scale, Sparkles } from "lucide-react";
+import { CalendarDays, Edit3, MessageCircle, Scale } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoldButton } from "@/components/shared/GoldButton";
@@ -38,69 +38,65 @@ export function SimulationResultPage() {
   return (
     <div className="space-y-5 pt-1">
       <section className="text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ic-gold/12 text-ic-gold">
-          <Sparkles size={22} />
-        </span>
-        <h1 className="mt-3 font-serif text-[32px] font-medium leading-9 text-ic-black">
-          Resultado simulado
+        <h1 className="font-serif text-[34px] font-medium leading-10 text-ic-black">
+          Prévia da sua simulação
         </h1>
         <p className="mx-auto mt-1 max-w-[320px] text-[13px] leading-5 text-ic-gray-600">
-          Uma prévia visual suave para apoiar sua avaliação com a IC Clinic.
+          Veja como os procedimentos podem realçar sua melhor versão.
         </p>
       </section>
 
-      <section className="relative overflow-hidden rounded-ic-xl bg-ic-cream-light shadow-ic-elevated">
-        <img
-          src={result.simulatedImageUrl}
-          alt="Simulação estética ilustrativa"
-          className="h-[430px] w-full object-cover"
-        />
-        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-          <div className="rounded-ic-lg bg-ic-black/72 px-3 py-2 text-ic-cream-light backdrop-blur">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ic-gold-light">
-              Prévia visual
-            </p>
-            <p className="font-serif text-[21px] font-semibold">Natural e sutil</p>
+      <section className="hide-scrollbar -mx-screen-px flex gap-2 overflow-x-auto px-screen-px">
+        {result.selectedProcedures.map((procedure) => (
+          <span
+            key={procedure}
+            className="flex h-9 flex-none items-center gap-2 rounded-ic-pill border border-ic-gold/40 bg-ic-cream-light px-4 text-xs font-semibold text-ic-gold-dark shadow-ic-card"
+          >
+            {procedure}
+            <span className="text-ic-gold">✓</span>
+          </span>
+        ))}
+      </section>
+
+      <section className="grid grid-cols-[96px_1fr] gap-3">
+        <div className="overflow-hidden rounded-ic-lg border border-ic-cream-dark bg-ic-cream-light shadow-ic-card">
+          <div className="px-2 py-2 text-center text-[11px] font-semibold text-ic-gray-600">
+            Foto original
           </div>
           <img
             src={result.originalImageUrl}
             alt="Foto original"
-            className="h-20 w-16 rounded-ic-md border-2 border-ic-cream-light object-cover shadow-ic-card"
+            className="h-[246px] w-full object-cover"
+          />
+        </div>
+        <div className="relative overflow-hidden rounded-ic-lg border border-ic-gold/22 bg-ic-cream-light shadow-ic-elevated">
+          <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-b-ic-md bg-ic-gold px-5 py-2 font-serif text-[16px] font-semibold text-ic-white shadow-ic-card">
+            Resultado simulado
+          </div>
+          <img
+            src={result.simulatedImageUrl}
+            alt="Simulação estética ilustrativa"
+            className="h-[500px] w-full object-cover"
           />
         </div>
       </section>
 
-      <section className="rounded-ic-lg bg-ic-cream-light p-4 shadow-ic-card">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ic-gold">
-          Procedimentos escolhidos
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {result.selectedProcedures.map((procedure) => (
-            <span
-              key={procedure}
-              className="rounded-ic-pill bg-ic-gold/12 px-3 py-1.5 text-xs font-semibold text-ic-gold-dark"
-            >
-              {procedure}
-            </span>
-          ))}
-        </div>
-      </section>
-
       <section>
-        <p className="mb-3 text-sm font-semibold text-ic-black">
-          Intensidade da simulação
-        </p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ic-black">
+          <span className="text-ic-gold">✦</span>
+          Intensidade
+        </div>
+        <div className="grid grid-cols-3 rounded-ic-pill border border-ic-cream-dark bg-ic-cream-light p-1 shadow-ic-card">
           {intensities.map((intensity) => (
             <button
               type="button"
               key={intensity.id}
               onClick={() => setSelectedIntensity(intensity.id)}
               className={cn(
-                "h-10 rounded-ic-pill border text-xs font-semibold shadow-ic-card",
+                "h-10 rounded-ic-pill text-xs font-semibold transition-colors",
                 selectedIntensity === intensity.id
-                  ? "border-ic-black bg-ic-black text-ic-cream-light"
-                  : "border-ic-cream-dark bg-ic-cream-light text-ic-gray-600"
+                  ? "bg-ic-cream text-ic-black shadow-ic-card"
+                  : "text-ic-gray-600"
               )}
             >
               {intensity.label}
@@ -120,7 +116,7 @@ export function SimulationResultPage() {
           <Edit3 size={16} />
           Ajustar
         </GoldButton>
-        <GoldButton variant="outline" onClick={() => navigate("/simulacao-ia/comparacao")}>
+        <GoldButton onClick={() => navigate("/simulacao-ia/comparacao")}>
           <Scale size={16} />
           Ver comparação
         </GoldButton>

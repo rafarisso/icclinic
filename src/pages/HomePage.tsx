@@ -97,12 +97,14 @@ export function HomePage() {
           {
             label: "Pré-cuidados",
             text: "Alguns cuidados importantes para o dia do seu procedimento.",
-            icon: ShieldCheck
+            icon: ShieldCheck,
+            image: "/mockups/pre-care.jpg"
           },
           {
             label: "Pós-cuidados",
             text: "Seu bem-estar é parte do resultado. Siga as recomendações.",
-            icon: Crown
+            icon: Crown,
+            image: "/mockups/post-care.jpg"
           }
         ].map((card) => {
           const Icon = card.icon;
@@ -128,7 +130,11 @@ export function HomePage() {
                 </button>
               </div>
               <div className="relative h-16 overflow-hidden bg-ic-gold/10">
-                <MockImage label={card.label} className="absolute inset-0 rounded-none" />
+                <MockImage
+                  label={card.label}
+                  src={card.image}
+                  className="absolute inset-0 rounded-none"
+                />
                 <Icon className="absolute bottom-3 right-3 text-ic-cream-light" size={18} />
               </div>
             </motion.article>
@@ -157,7 +163,11 @@ export function HomePage() {
               className="overflow-hidden rounded-ic-lg bg-ic-cream-light shadow-ic-card"
               onClick={() => navigate(`/agendar?procedure=${procedure.id}`)}
             >
-              <MockImage label={procedure.name} className="h-[112px] rounded-b-none" />
+              <MockImage
+                label={procedure.name}
+                src={procedure.imageUrl}
+                className="h-[112px] rounded-b-none"
+              />
               <div className="p-3">
                 <Badge>{index === 0 ? "Protocolo" : "Em destaque"}</Badge>
                 <h3 className="mt-2 font-serif text-[21px] font-semibold leading-6">
@@ -184,7 +194,11 @@ export function HomePage() {
         className="relative overflow-hidden rounded-ic-xl bg-ic-charcoal p-5 shadow-ic-elevated"
       >
         <div className="absolute inset-y-0 right-0 w-32 opacity-75">
-          <MockImage label="Clínica IC" className="h-full rounded-none" />
+          <MockImage
+            label="Clínica IC"
+            src="/mockups/clinic-banner.jpg"
+            className="h-full rounded-none"
+          />
         </div>
         <div className="relative z-10 max-w-[230px]">
           <p className="font-serif text-[25px] leading-7 text-ic-cream-light">

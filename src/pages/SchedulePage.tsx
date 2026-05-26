@@ -66,7 +66,11 @@ export function SchedulePage() {
         {isLoading ? (
           <div className="h-14 w-14 rounded-full skeleton" />
         ) : (
-          <MockImage label={selectedProcedureName} className="h-14 w-14 rounded-full" />
+          <MockImage
+            label={selectedProcedureName}
+            src={procedure?.imageUrl ?? "/mockups/skin-booster.jpg"}
+            className="h-14 w-14 rounded-full"
+          />
         )}
         <div className="min-w-0 flex-1">
           <h2 className="font-serif text-[22px] font-semibold leading-6">

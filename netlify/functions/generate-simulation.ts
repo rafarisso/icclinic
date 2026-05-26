@@ -39,40 +39,8 @@ function jsonResponse(body: SimulationResponse | ErrorResponse, status = 200) {
   });
 }
 
-function createMockSimulationDataUrl(selectedProcedures: string[]) {
-  const details = selectedProcedures.length
-    ? selectedProcedures.join(" + ")
-    : "Prévia natural";
-
-  const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1280" viewBox="0 0 1024 1280">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FAF5EC"/>
-      <stop offset="0.48" stop-color="#E8DCC8"/>
-      <stop offset="1" stop-color="#B89968"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="34%" r="42%">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.86"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="1024" height="1280" fill="url(#bg)"/>
-  <rect width="1024" height="1280" fill="url(#glow)"/>
-  <ellipse cx="512" cy="498" rx="230" ry="300" fill="#D9BFA0" opacity="0.92"/>
-  <path d="M330 468 C360 340 438 276 512 276 C596 276 666 346 694 468 C662 404 604 374 512 374 C420 374 362 404 330 468Z" fill="#2D2620" opacity="0.86"/>
-  <ellipse cx="430" cy="514" rx="22" ry="15" fill="#2D2620" opacity="0.65"/>
-  <ellipse cx="594" cy="514" rx="22" ry="15" fill="#2D2620" opacity="0.65"/>
-  <path d="M512 526 C496 585 488 620 512 636 C536 620 528 585 512 526Z" fill="none" stroke="#8B6F47" stroke-width="10" stroke-linecap="round" opacity="0.58"/>
-  <path d="M438 700 C484 732 544 732 586 700" fill="none" stroke="#A66F6A" stroke-width="22" stroke-linecap="round" opacity="0.72"/>
-  <circle cx="392" cy="608" r="34" fill="#E8B7A6" opacity="0.35"/>
-  <circle cx="632" cy="608" r="34" fill="#E8B7A6" opacity="0.35"/>
-  <text x="512" y="940" text-anchor="middle" font-family="Georgia, serif" font-size="64" fill="#2D2620">Simulação com IA</text>
-  <text x="512" y="1008" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6B6258">${details}</text>
-  <text x="512" y="1068" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#8B6F47">Prévia ilustrativa, natural e sutil</text>
-</svg>`.trim();
-
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+function createMockSimulationUrl() {
+  return "/mockups/simulation-result.jpg";
 }
 
 export default async (req: Request, _context: Context) => {
@@ -119,7 +87,7 @@ export default async (req: Request, _context: Context) => {
 
   if (!apiKey) {
     return jsonResponse({
-      simulatedImageUrl: createMockSimulationDataUrl(selectedProcedures),
+      simulatedImageUrl: createMockSimulationUrl(),
       selectedProcedures,
       intensity,
       disclaimer,

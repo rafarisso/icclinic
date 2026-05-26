@@ -10,12 +10,12 @@ import type { SimulationProcedure, SimulationResult } from "@/types";
 
 const markerMap: Record<
   SimulationProcedure,
-  { label: string; top: string; left: string }
+  { label: string; top: string; width: string }
 > = {
-  botox: { label: "Botox", top: "24%", left: "50%" },
-  nariz: { label: "Nariz", top: "46%", left: "50%" },
-  labios: { label: "Lábios", top: "62%", left: "50%" },
-  limpeza: { label: "Pele", top: "38%", left: "32%" }
+  botox: { label: "Botox", top: "27%", width: "72px" },
+  nariz: { label: "Nariz", top: "48%", width: "62px" },
+  labios: { label: "Lábios", top: "60%", width: "70px" },
+  limpeza: { label: "Pele", top: "70%", width: "78px" }
 };
 
 export function SimulationComparePage() {
@@ -39,14 +39,12 @@ export function SimulationComparePage() {
   return (
     <div className="space-y-5 pt-1">
       <section className="text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ic-gold/12 text-ic-gold">
-          <Sparkles size={22} />
-        </span>
-        <h1 className="mt-3 font-serif text-[31px] font-medium leading-9 text-ic-black">
-          Antes e depois
+        <h1 className="font-serif text-[36px] font-medium leading-10 text-ic-black">
+          Compare seu
+          <span className="block text-ic-gold-dark">antes e depois</span>
         </h1>
         <p className="mx-auto mt-1 max-w-[330px] text-[13px] leading-5 text-ic-gray-600">
-          Compare a selfie original com a prévia visual gerada para avaliação.
+          Veja sua simulação personalizada.
         </p>
       </section>
 
@@ -54,21 +52,41 @@ export function SimulationComparePage() {
         <BeforeAfterSlider
           beforeImageUrl={result.originalImageUrl}
           afterImageUrl={result.simulatedImageUrl}
-          className="h-[430px]"
+          afterLabel="Simulação"
+          className="h-[550px]"
         />
         {result.selectedProcedureIds.map((procedure) => {
           const marker = markerMap[procedure];
           return (
-            <span
+            <div
               key={procedure}
-              className="absolute z-20 rounded-ic-pill border border-ic-cream-light bg-ic-black/72 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ic-cream-light shadow-ic-card backdrop-blur"
-              style={{ top: marker.top, left: marker.left, transform: "translate(-50%, -50%)" }}
+              className="absolute right-5 z-30 flex items-center"
+              style={{ top: marker.top }}
             >
-              {marker.label}
-            </span>
+              <Sparkles size={11} className="mr-1 text-ic-gold-light" />
+              <span
+                className="border-t border-dashed border-ic-gold-light"
+                style={{ width: marker.width }}
+              />
+              <span className="rounded-ic-sm border border-ic-gold/30 bg-ic-cream-light px-3 py-1 font-serif text-[15px] font-semibold text-ic-gold-dark shadow-ic-card">
+                {marker.label}
+              </span>
+            </div>
           );
         })}
       </div>
+
+      <section className="flex items-center gap-3 rounded-ic-lg border border-ic-cream-dark bg-ic-cream-light p-4 shadow-ic-card">
+        <Sparkles size={23} className="flex-none text-ic-gold" />
+        <p className="text-[13px] leading-5 text-ic-gray-600">
+          Resultado natural, harmônico e personalizado para a sua melhor versão.
+        </p>
+      </section>
+
+      <GoldButton className="w-full" onClick={() => navigate("/agendar")}>
+        <CalendarDays size={17} />
+        Agendar consulta
+      </GoldButton>
 
       <SimulationDisclaimer compact />
 
@@ -80,11 +98,6 @@ export function SimulationComparePage() {
           Agende uma avaliação para entender o que é indicado para o seu caso.
         </p>
       </section>
-
-      <GoldButton className="w-full" onClick={() => navigate("/agendar")}>
-        <CalendarDays size={17} />
-        Agendar avaliação
-      </GoldButton>
       <GoldButton
         variant="outline"
         className="w-full"

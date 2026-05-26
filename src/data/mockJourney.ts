@@ -9,7 +9,7 @@ export const mockJourney: Journey = {
       name: "Avaliação inicial",
       description: "Consulta e plano personalizado",
       status: "completed",
-      thumbnailUrl: "/mockups/journey-1.jpg",
+      thumbnailUrl: "/mockups/journey-step-1.jpg",
       completedAt: "2026-01-15"
     },
     {
@@ -17,7 +17,7 @@ export const mockJourney: Journey = {
       name: "Bioestimulador",
       description: "Estímulo de colágeno e firmeza",
       status: "completed",
-      thumbnailUrl: "/mockups/journey-2.jpg",
+      thumbnailUrl: "/mockups/journey-step-2.jpg",
       completedAt: "2026-02-12"
     },
     {
@@ -25,7 +25,7 @@ export const mockJourney: Journey = {
       name: "Botox Full Face",
       description: "Harmonização e prevenção",
       status: "completed",
-      thumbnailUrl: "/mockups/journey-3.jpg",
+      thumbnailUrl: "/mockups/journey-step-3.jpg",
       completedAt: "2026-03-18"
     },
     {
@@ -33,14 +33,14 @@ export const mockJourney: Journey = {
       name: "Skin Booster",
       description: "Hidratação profunda e viço",
       status: "in-progress",
-      thumbnailUrl: "/mockups/journey-4.jpg"
+      thumbnailUrl: "/mockups/journey-step-4.jpg"
     },
     {
       id: "step-5",
       name: "Manutenção",
       description: "Resultados duradouros",
       status: "future",
-      thumbnailUrl: "/mockups/journey-5.jpg"
+      thumbnailUrl: "/mockups/journey-step-5.jpg"
     }
   ]
 };

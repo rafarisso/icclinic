@@ -82,7 +82,11 @@ export function AdminPatientProfilePage() {
             key={photo.id}
             className="overflow-hidden rounded-ic-lg bg-ic-cream-light shadow-ic-card"
           >
-            <MockImage label={photo.type} className="h-32 rounded-b-none" />
+            <MockImage
+              label={photo.type}
+              src={photo.imageUrl}
+              className="h-32 rounded-b-none"
+            />
             <div className="p-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ic-gold">
                 Foto {photo.type}

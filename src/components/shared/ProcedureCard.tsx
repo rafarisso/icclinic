@@ -25,6 +25,7 @@ export function ProcedureCard({ procedure }: ProcedureCardProps) {
       <div className="flex gap-3">
         <MockImage
           label={procedure.name}
+          src={procedure.imageUrl}
           className="h-[116px] w-[116px] flex-none"
         />
         <div className="min-w-0 flex-1">

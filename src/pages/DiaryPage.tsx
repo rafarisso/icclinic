@@ -20,7 +20,11 @@ export function DiaryPage() {
         </p>
       </section>
 
-      <BeforeAfterSlider />
+      <BeforeAfterSlider
+        beforeImageUrl={data?.beforePhotoUrl}
+        afterImageUrl={data?.afterPhotoUrl}
+        className="h-[284px]"
+      />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-ic-black">
@@ -50,7 +54,11 @@ export function DiaryPage() {
                       {entry.description}
                     </p>
                   </div>
-                  <MockImage label={entry.title} className="h-[72px] w-[72px] flex-none" />
+                  <MockImage
+                    label={entry.title}
+                    src={entry.thumbnailUrl}
+                    className="h-[72px] w-[72px] flex-none"
+                  />
                 </article>
               </div>
             ))}

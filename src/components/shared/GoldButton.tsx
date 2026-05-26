@@ -7,7 +7,8 @@ interface GoldButtonProps extends HTMLMotionProps<"button"> {
 }
 
 const variantClasses = {
-  solid: "bg-ic-gold text-ic-white shadow-ic-card hover:bg-ic-gold-dark",
+  solid:
+    "gold-sheen text-ic-white shadow-ic-card hover:brightness-[0.98]",
   outline:
     "border border-ic-gold/55 bg-transparent text-ic-gold hover:bg-ic-gold/10",
   ghost: "bg-transparent text-ic-gold hover:bg-ic-gold/10"

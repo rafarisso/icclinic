@@ -10,7 +10,7 @@ export const mockDiary: Diary = {
       title: "Pele mais viçosa",
       description:
         "Melhora na luminosidade e textura da pele já perceptível.",
-      thumbnailUrl: "/mockups/diary-1.jpg"
+      thumbnailUrl: "/mockups/diary-thumb-1.jpg"
     },
     {
       id: "entry-2",
@@ -18,7 +18,7 @@ export const mockDiary: Diary = {
       title: "Recuperação excelente",
       description:
         "Sem intercorrências. Edema reduzido e evolução dentro do esperado.",
-      thumbnailUrl: "/mockups/diary-2.jpg"
+      thumbnailUrl: "/mockups/diary-thumb-2.jpg"
     },
     {
       id: "entry-3",
@@ -26,7 +26,7 @@ export const mockDiary: Diary = {
       title: "Resultado natural e harmônico",
       description:
         "Contornos mais definidos e expressão leve. Muito satisfeita!",
-      thumbnailUrl: "/mockups/diary-3.jpg"
+      thumbnailUrl: "/mockups/diary-thumb-3.jpg"
     }
   ]
 };

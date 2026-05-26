@@ -63,30 +63,8 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
-function createClientFallbackSimulation(selectedProcedures: string[]) {
-  const details = selectedProcedures.join(" + ");
-  const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1280" viewBox="0 0 1024 1280">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FAF5EC"/>
-      <stop offset="0.52" stop-color="#E8DCC8"/>
-      <stop offset="1" stop-color="#B89968"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1280" fill="url(#bg)"/>
-  <ellipse cx="512" cy="505" rx="235" ry="305" fill="#D8BFA5" opacity="0.92"/>
-  <path d="M326 468 C356 336 438 270 512 270 C598 270 668 345 698 468 C662 402 604 374 512 374 C420 374 362 402 326 468Z" fill="#2D2620" opacity="0.84"/>
-  <ellipse cx="430" cy="520" rx="22" ry="15" fill="#2D2620" opacity="0.62"/>
-  <ellipse cx="594" cy="520" rx="22" ry="15" fill="#2D2620" opacity="0.62"/>
-  <path d="M512 530 C496 586 490 620 512 638 C536 620 528 586 512 530Z" fill="none" stroke="#8B6F47" stroke-width="10" stroke-linecap="round" opacity="0.56"/>
-  <path d="M438 700 C484 732 544 732 586 700" fill="none" stroke="#A66F6A" stroke-width="22" stroke-linecap="round" opacity="0.72"/>
-  <text x="512" y="940" text-anchor="middle" font-family="Georgia, serif" font-size="64" fill="#2D2620">Simulação com IA</text>
-  <text x="512" y="1008" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6B6258">${details}</text>
-  <text x="512" y="1068" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#8B6F47">Prévia ilustrativa, natural e sutil</text>
-</svg>`.trim();
-
-  return `data:image/svg+xml;base64,${window.btoa(unescape(encodeURIComponent(svg)))}`;
+function createClientFallbackSimulation() {
+  return "/mockups/simulation-result.jpg";
 }
 
 export const simulationService = {
@@ -137,7 +115,7 @@ export const simulationService = {
       if (error instanceof SyntaxError) {
         return {
           originalImageUrl,
-          simulatedImageUrl: createClientFallbackSimulation(selectedProcedures),
+          simulatedImageUrl: createClientFallbackSimulation(),
           selectedProcedures,
           selectedProcedureIds: params.procedures,
           intensity: params.intensity,
@@ -154,7 +132,7 @@ export const simulationService = {
 
       return {
         originalImageUrl,
-        simulatedImageUrl: createClientFallbackSimulation(selectedProcedures),
+        simulatedImageUrl: createClientFallbackSimulation(),
         selectedProcedures,
         selectedProcedureIds: params.procedures,
         intensity: params.intensity,

@@ -51,6 +51,7 @@ export function NextProcedureCard({ appointment }: NextProcedureCardProps) {
         </div>
         <MockImage
           label={appointment.procedureName}
+          src={appointment.imageUrl}
           className="h-[150px] w-[128px] rounded-ic-lg"
           iconClassName="text-ic-charcoal/70"
         />

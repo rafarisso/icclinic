@@ -13,7 +13,7 @@ export function TopBar() {
   const isProfile = location.pathname === "/perfil";
 
   return (
-    <header className="sticky top-0 z-30 flex h-[70px] items-center justify-center bg-ic-cream/92 px-screen-px backdrop-blur-xl">
+    <header className="sticky top-0 z-30 flex h-[88px] items-center justify-center bg-ic-cream/92 px-screen-px backdrop-blur-xl">
       <div className="absolute left-screen-px">
         {isDiary ? (
           <button
@@ -26,7 +26,7 @@ export function TopBar() {
           </button>
         ) : null}
       </div>
-      <ICLogo size="small" />
+      <ICLogo size="medium" />
       <div className="absolute right-screen-px">
         <button
           type="button"

@@ -91,6 +91,7 @@ export function ProceduresPage() {
       <section className="relative overflow-hidden rounded-ic-xl bg-ic-charcoal p-5 shadow-ic-elevated">
         <MockImage
           label="Protocolos IC Clinic"
+          src="/mockups/procedures-banner.jpg"
           className="absolute inset-y-0 right-0 w-32 rounded-none opacity-70"
         />
         <div className="relative max-w-[246px]">
