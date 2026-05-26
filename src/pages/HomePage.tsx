@@ -1,4 +1,4 @@
-import { ChevronRight, Crown, ShieldCheck } from "lucide-react";
+import { ChevronRight, Crown, ShieldCheck, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -66,6 +66,31 @@ export function HomePage() {
       <NextProcedureCard appointment={nextAppointment} />
 
       <QuickActions />
+
+      <motion.section
+        whileTap={{ scale: 0.98 }}
+        onClick={() => navigate("/simulacao-ia")}
+        className="relative overflow-hidden rounded-ic-xl border border-ic-gold/25 bg-ic-cream-light p-4 shadow-ic-card"
+      >
+        <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-ic-gold/18 blur-2xl" />
+        <div className="relative z-10 flex items-center gap-3">
+          <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-ic-gold/12 text-ic-gold">
+            <Sparkles size={22} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ic-gold">
+              Novo
+            </span>
+            <h2 className="font-serif text-[23px] font-semibold leading-7 text-ic-black">
+              Simulação com IA
+            </h2>
+            <p className="mt-1 text-[12px] leading-5 text-ic-gray-600">
+              Envie uma selfie e veja uma prévia visual ilustrativa, natural e sutil.
+            </p>
+          </div>
+          <ChevronRight size={19} className="text-ic-gold" />
+        </div>
+      </motion.section>
 
       <section className="grid grid-cols-2 gap-3">
         {[

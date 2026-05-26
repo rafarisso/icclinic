@@ -5,12 +5,16 @@ import { cn } from "@/lib/utils";
 interface BeforeAfterSliderProps {
   beforeLabel?: string;
   afterLabel?: string;
+  beforeImageUrl?: string;
+  afterImageUrl?: string;
   className?: string;
 }
 
 export function BeforeAfterSlider({
   beforeLabel = "Antes",
   afterLabel = "Depois",
+  beforeImageUrl,
+  afterImageUrl,
   className
 }: BeforeAfterSliderProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -47,12 +51,28 @@ export function BeforeAfterSlider({
       aria-valuenow={Math.round(position)}
       tabIndex={0}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_28%,rgba(250,245,236,0.55),transparent_28%),linear-gradient(135deg,#b6a08a,#2d2620)]" />
+      {afterImageUrl ? (
+        <img
+          src={afterImageUrl}
+          alt={afterLabel}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_28%,rgba(250,245,236,0.55),transparent_28%),linear-gradient(135deg,#b6a08a,#2d2620)]" />
+      )}
       <div
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
       >
-        <div className="h-full w-full bg-[radial-gradient(circle_at_38%_35%,rgba(250,245,236,0.68),transparent_28%),linear-gradient(135deg,#eadccc,#9a7752)]" />
+        {beforeImageUrl ? (
+          <img
+            src={beforeImageUrl}
+            alt={beforeLabel}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="h-full w-full bg-[radial-gradient(circle_at_38%_35%,rgba(250,245,236,0.68),transparent_28%),linear-gradient(135deg,#eadccc,#9a7752)]" />
+        )}
       </div>
       <div
         className="absolute inset-y-0 z-10 w-px bg-ic-gold-light"

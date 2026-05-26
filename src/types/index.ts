@@ -76,3 +76,60 @@ export interface Notification {
   title: string;
   read: boolean;
 }
+
+export type SimulationProcedure = "botox" | "nariz" | "labios" | "limpeza";
+
+export type SimulationIntensity = "natural" | "moderado" | "marcante";
+
+export interface SimulationResult {
+  originalImageUrl: string;
+  simulatedImageUrl: string;
+  selectedProcedures: string[];
+  selectedProcedureIds: SimulationProcedure[];
+  intensity: SimulationIntensity;
+  disclaimer: string;
+  mode: "openai" | "mock" | "client-fallback";
+  createdAt: string;
+}
+
+export interface Patient {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  birthDate: string;
+  createdAt: string;
+  lastProcedure: string;
+  status: "active" | "follow_up" | "planned";
+}
+
+export interface PatientPhoto {
+  id: string;
+  patientId: string;
+  imageUrl: string;
+  type: "original" | "before" | "after" | "simulation";
+  consentGiven: boolean;
+  createdAt: string;
+}
+
+export interface PatientTimelineItem {
+  id: string;
+  patientId: string;
+  procedureId: string;
+  procedureName: string;
+  date: string;
+  notes: string;
+  status: "planned" | "done" | "follow_up";
+  createdAt: string;
+}
+
+export interface AISimulationRecord {
+  id: string;
+  patientId?: string;
+  originalImageUrl: string;
+  simulatedImageUrl: string;
+  selectedProcedures: string[];
+  intensity: SimulationIntensity;
+  disclaimerAccepted: boolean;
+  createdAt: string;
+}

@@ -22,6 +22,36 @@ const DiaryPage = lazy(() =>
 const ProfilePage = lazy(() =>
   import("@/pages/ProfilePage").then((module) => ({ default: module.ProfilePage }))
 );
+const SimulationUploadPage = lazy(() =>
+  import("@/pages/SimulationUploadPage").then((module) => ({
+    default: module.SimulationUploadPage
+  }))
+);
+const SimulationResultPage = lazy(() =>
+  import("@/pages/SimulationResultPage").then((module) => ({
+    default: module.SimulationResultPage
+  }))
+);
+const SimulationComparePage = lazy(() =>
+  import("@/pages/SimulationComparePage").then((module) => ({
+    default: module.SimulationComparePage
+  }))
+);
+const AdminDashboardPage = lazy(() =>
+  import("@/pages/AdminDashboardPage").then((module) => ({
+    default: module.AdminDashboardPage
+  }))
+);
+const AdminPatientsPage = lazy(() =>
+  import("@/pages/AdminPatientsPage").then((module) => ({
+    default: module.AdminPatientsPage
+  }))
+);
+const AdminPatientProfilePage = lazy(() =>
+  import("@/pages/AdminPatientProfilePage").then((module) => ({
+    default: module.AdminPatientProfilePage
+  }))
+);
 
 function RouteFallback() {
   return (
@@ -82,6 +112,54 @@ export default function App() {
           element={
             <Suspense fallback={<RouteFallback />}>
               <ProfilePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/simulacao-ia"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <SimulationUploadPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/simulacao-ia/resultado"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <SimulationResultPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/simulacao-ia/comparacao"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <SimulationComparePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <AdminDashboardPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/pacientes"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <AdminPatientsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/pacientes/:id"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <AdminPatientProfilePage />
             </Suspense>
           }
         />
