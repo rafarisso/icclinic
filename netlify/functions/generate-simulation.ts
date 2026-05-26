@@ -95,7 +95,7 @@ export default async (req: Request, _context: Context) => {
     });
   }
 
-  const client = new OpenAI({ apiKey, timeout: 22000 });
+  const client = new OpenAI({ apiKey, timeout: 24000 });
   const imageFile = await toFile(await image.arrayBuffer(), image.name || "selfie.jpg", {
     type: image.type || "image/jpeg"
   });
@@ -106,7 +106,7 @@ export default async (req: Request, _context: Context) => {
       image: imageFile,
       prompt,
       n: 1,
-      size: "512x512",
+      size: "1024x1024",
       quality: "low",
       output_format: "jpeg"
     });
