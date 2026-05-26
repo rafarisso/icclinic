@@ -1,26 +1,19 @@
 import type { Config, Context } from "@netlify/functions";
-import OpenAI, { toFile } from "openai";
 import {
-  buildSimulationPrompt,
   getProcedureLabels,
   normalizeIntensity,
   normalizeProcedures
 } from "./_shared/simulationPrompt";
+import {
+  getSimulationJobStore,
+  simulationJobKey
+} from "./_shared/simulationJobs";
 
-declare const Netlify: {
-  env: {
-    get: (name: string) => string | undefined;
-  };
-};
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
-const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
-
-interface SimulationResponse {
-  simulatedImageUrl: string;
-  selectedProcedures: string[];
-  intensity: string;
-  disclaimer: string;
-  mode: "openai" | "mock";
+interface JobCreatedResponse {
+  jobId: string;
+  status: "processing";
 }
 
 interface ErrorResponse {
@@ -30,7 +23,7 @@ interface ErrorResponse {
 const disclaimer =
   "Simulação ilustrativa. O resultado real depende de avaliação profissional da Dra. Camila Castro.";
 
-function jsonResponse(body: SimulationResponse | ErrorResponse, status = 200) {
+function jsonResponse(body: JobCreatedResponse | ErrorResponse, status = 200) {
   return Response.json(body, {
     status,
     headers: {
@@ -39,8 +32,8 @@ function jsonResponse(body: SimulationResponse | ErrorResponse, status = 200) {
   });
 }
 
-function createMockSimulationUrl() {
-  return "/mockups/simulation-result.jpg";
+function createJobId() {
+  return crypto.randomUUID();
 }
 
 export default async (req: Request, _context: Context) => {
@@ -73,68 +66,42 @@ export default async (req: Request, _context: Context) => {
   }
 
   if (image.size > MAX_IMAGE_SIZE_BYTES) {
-    return jsonResponse({ error: "A imagem precisa ter até 8 MB." }, 400);
+    return jsonResponse({ error: "A imagem precisa ter até 5 MB." }, 400);
   }
 
   if (procedures.length === 0) {
     return jsonResponse({ error: "Selecione ao menos um procedimento." }, 400);
   }
 
+  const jobId = createJobId();
   const selectedProcedures = getProcedureLabels(procedures);
-  const prompt = buildSimulationPrompt(procedures, intensity);
-  const apiKey = Netlify.env.get("OPENAI_API_KEY");
-  const model = Netlify.env.get("OPENAI_IMAGE_MODEL") || "gpt-image-2";
+  const store = getSimulationJobStore();
+  const createdAt = new Date().toISOString();
 
-  if (!apiKey) {
-    return jsonResponse({
-      simulatedImageUrl: createMockSimulationUrl(),
-      selectedProcedures,
-      intensity,
-      disclaimer,
-      mode: "mock"
-    });
-  }
-
-  const client = new OpenAI({ apiKey, timeout: 24000 });
-  const imageFile = await toFile(await image.arrayBuffer(), image.name || "selfie.jpg", {
-    type: image.type || "image/jpeg"
+  await store.setJSON(simulationJobKey(jobId), {
+    status: "processing",
+    selectedProcedures,
+    intensity,
+    disclaimer,
+    createdAt
   });
 
-  try {
-    const response = await client.images.edit({
-      model,
-      image: imageFile,
-      prompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "low",
-      output_format: "jpeg"
-    });
+  const backgroundFormData = new FormData();
+  backgroundFormData.append("jobId", jobId);
+  backgroundFormData.append("image", image);
+  backgroundFormData.append("intensity", intensity);
+  backgroundFormData.append("consent", "true");
+  procedures.forEach((procedure) =>
+    backgroundFormData.append("procedures", procedure)
+  );
 
-    const b64Json = response.data?.[0]?.b64_json;
+  const backgroundUrl = new URL("/api/generate-simulation-background", req.url);
+  await fetch(backgroundUrl, {
+    method: "POST",
+    body: backgroundFormData
+  });
 
-    if (!b64Json) {
-      return jsonResponse(
-        { error: "Não foi possível gerar a simulação neste momento." },
-        502
-      );
-    }
-
-    return jsonResponse({
-      simulatedImageUrl: `data:image/jpeg;base64,${b64Json}`,
-      selectedProcedures,
-      intensity,
-      disclaimer,
-      mode: "openai"
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Erro desconhecido";
-    console.error("OpenAI image generation failed:", message);
-    return jsonResponse(
-      { error: "Não foi possível gerar a simulação neste momento." },
-      502
-    );
-  }
+  return jsonResponse({ jobId, status: "processing" }, 202);
 };
 
 export const config: Config = {

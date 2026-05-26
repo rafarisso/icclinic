@@ -5,6 +5,9 @@ import type {
 } from "@/types";
 
 const STORAGE_KEY = "ic-clinic-ai-simulation";
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const POLL_INTERVAL_MS = 2500;
+const POLL_TIMEOUT_MS = 150000;
 
 const procedureLabels: Record<SimulationProcedure, string> = {
   botox: "Botox",
@@ -19,6 +22,11 @@ interface ApiSimulationResponse {
   intensity: SimulationIntensity;
   disclaimer: string;
   mode: "openai" | "mock";
+}
+
+interface ApiJobCreatedResponse {
+  jobId: string;
+  status: "processing";
 }
 
 function isSimulationIntensity(value: string): value is SimulationIntensity {
@@ -67,6 +75,71 @@ function createClientFallbackSimulation() {
   return "/mockups/simulation-result.jpg";
 }
 
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function parseJobCreatedResponse(value: unknown): ApiJobCreatedResponse {
+  if (!value || typeof value !== "object") {
+    throw new Error("Resposta inválida da simulação.");
+  }
+
+  const record = value as Record<string, unknown>;
+
+  if (typeof record.jobId !== "string" || record.jobId.length === 0) {
+    throw new Error("Job de simulação não retornado.");
+  }
+
+  return {
+    jobId: record.jobId,
+    status: "processing"
+  };
+}
+
+async function pollSimulationJob(jobId: string): Promise<ApiSimulationResponse> {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
+    await delay(POLL_INTERVAL_MS);
+
+    const response = await fetch(`/api/simulation-status/${jobId}`, {
+      method: "GET"
+    });
+
+    if (response.status === 404) {
+      continue;
+    }
+
+    const payload = (await response.json()) as unknown;
+
+    if (!response.ok) {
+      const errorRecord = payload as Record<string, unknown>;
+      throw new Error(String(errorRecord.error ?? "Erro ao consultar simulação."));
+    }
+
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Status inválido da simulação.");
+    }
+
+    const record = payload as Record<string, unknown>;
+    const status = String(record.status ?? "processing");
+
+    if (status === "completed") {
+      return parseApiResponse(record);
+    }
+
+    if (status === "failed") {
+      throw new Error(
+        typeof record.error === "string"
+          ? record.error
+          : "Não foi possível gerar a simulação neste momento."
+      );
+    }
+  }
+
+  throw new Error("A simulação demorou mais que o esperado. Tente novamente.");
+}
+
 export const simulationService = {
   procedureLabels,
 
@@ -76,6 +149,10 @@ export const simulationService = {
     intensity: SimulationIntensity;
     consent: boolean;
   }): Promise<SimulationResult> {
+    if (params.file.size > MAX_IMAGE_SIZE_BYTES) {
+      throw new Error("A imagem precisa ter até 5 MB.");
+    }
+
     const originalImageUrl = await readFileAsDataUrl(params.file);
     const selectedProcedures = params.procedures.map(
       (procedure) => procedureLabels[procedure]
@@ -100,7 +177,9 @@ export const simulationService = {
         throw new Error(String(errorRecord.error ?? "Erro ao gerar simulação."));
       }
 
-      const data = parseApiResponse(payload);
+      const job = parseJobCreatedResponse(payload);
+      const data = await pollSimulationJob(job.jobId);
+
       return {
         originalImageUrl,
         simulatedImageUrl: data.simulatedImageUrl,
