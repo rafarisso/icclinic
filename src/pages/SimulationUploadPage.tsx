@@ -4,29 +4,43 @@ import {
   Check,
   Image as ImageIcon,
   ImagePlus,
+  RefreshCcw,
   Sparkles
 } from "lucide-react";
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  DragEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { useNavigate } from "react-router-dom";
-import { GoldButton } from "@/components/shared/GoldButton";
 import { SimulationDisclaimer } from "@/components/simulation/SimulationDisclaimer";
+import { GoldButton } from "@/components/shared/GoldButton";
 import { cn } from "@/lib/utils";
 import { simulationService } from "@/services/simulationService";
 import type { SimulationProcedure } from "@/types";
 
-const procedures: Array<{ id: SimulationProcedure; label: string; hint: string }> = [
-  { id: "botox", label: "Botox", hint: "Linhas suaves" },
-  { id: "nariz", label: "Nariz", hint: "Empinadinha sutil" },
-  { id: "labios", label: "Lábios", hint: "Definição natural" },
-  { id: "limpeza", label: "Limpeza de pele", hint: "Viço e textura" }
+const procedures: Array<{ id: SimulationProcedure; label: string }> = [
+  { id: "botox", label: "Botox" },
+  { id: "nariz", label: "Nariz" },
+  { id: "labios", label: "Lábios" },
+  { id: "limpeza", label: "Limpeza de pele" }
 ];
 
 export function SimulationUploadPage() {
   const navigate = useNavigate();
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [isCameraStarting, setIsCameraStarting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [selected, setSelected] = useState<SimulationProcedure[]>(["limpeza"]);
   const [consent, setConsent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +50,33 @@ export function SimulationUploadPage() {
     () => Boolean(file && selected.length > 0 && consent && !isLoading),
     [consent, file, isLoading, selected.length]
   );
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setCameraOpen(false);
+    setIsCameraStarting(false);
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  useEffect(() => {
+    if (cameraOpen && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      void videoRef.current.play();
+    }
+  }, [cameraOpen]);
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const toggleProcedure = (procedure: SimulationProcedure) => {
     setSelected((current) =>
@@ -58,17 +99,86 @@ export function SimulationUploadPage() {
 
   const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
     selectFile(event.target.files?.[0] ?? null);
+    stopCamera();
+    event.target.value = "";
   };
 
-  const loadSampleImage = async () => {
+  const startCamera = async () => {
     setError(null);
-    const response = await fetch("/mockups/simulation-original.jpg");
-    const blob = await response.blob();
-    const sampleFile = new File([blob], "selfie-exemplo-ic-clinic.jpg", {
-      type: blob.type || "image/jpeg"
-    });
-    selectFile(sampleFile);
-    setSelected(["botox", "nariz", "labios", "limpeza"]);
+    setIsCameraStarting(true);
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        cameraInputRef.current?.click();
+        return;
+      }
+
+      stopCamera();
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 1280 }
+        },
+        audio: false
+      });
+
+      streamRef.current = stream;
+      setCameraOpen(true);
+    } catch {
+      cameraInputRef.current?.click();
+    } finally {
+      setIsCameraStarting(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 1080;
+    canvas.height = video.videoHeight || 1080;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      setError("Não foi possível capturar a foto.");
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          setError("Não foi possível capturar a foto.");
+          return;
+        }
+
+        selectFile(
+          new File([blob], "selfie-ic-clinic.jpg", {
+            type: "image/jpeg"
+          })
+        );
+        stopCamera();
+      },
+      "image/jpeg",
+      0.92
+    );
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+
+    const droppedFile = event.dataTransfer.files?.[0] ?? null;
+    if (droppedFile?.type.startsWith("image/")) {
+      selectFile(droppedFile);
+      stopCamera();
+      return;
+    }
+
+    setError("Escolha um arquivo de imagem válido.");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -80,6 +190,7 @@ export function SimulationUploadPage() {
 
     setIsLoading(true);
     setError(null);
+    stopCamera();
 
     try {
       const result = await simulationService.generate({
@@ -113,41 +224,77 @@ export function SimulationUploadPage() {
       </section>
 
       <section>
-        <label className="block cursor-pointer">
-          <input
-            ref={cameraInputRef}
-            className="sr-only"
-            type="file"
-            accept="image/*"
-            capture="user"
-            onChange={handleFile}
-          />
-          <input
-            ref={galleryInputRef}
-            className="sr-only"
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-          />
-          <div className="relative h-[430px] overflow-hidden rounded-ic-lg border border-ic-gold/18 bg-ic-cream-light shadow-ic-card">
+        <input
+          ref={cameraInputRef}
+          className="sr-only"
+          type="file"
+          accept="image/*"
+          capture="user"
+          onChange={handleFile}
+        />
+        <input
+          ref={galleryInputRef}
+          className="sr-only"
+          type="file"
+          accept="image/*"
+          onChange={handleFile}
+        />
+        <div
+          className={cn(
+            "relative h-[430px] overflow-hidden rounded-ic-lg border bg-ic-cream-light shadow-ic-card transition-colors",
+            isDragging ? "border-ic-gold" : "border-ic-gold/18"
+          )}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+        >
+          {cameraOpen ? (
+            <video
+              ref={videoRef}
+              className="h-full w-full bg-ic-black object-cover"
+              autoPlay
+              muted
+              playsInline
+            />
+          ) : previewUrl ? (
             <img
-              src={previewUrl ?? "/mockups/simulation-original.jpg"}
-              alt={previewUrl ? "Selfie selecionada" : "Exemplo de selfie"}
+              src={previewUrl}
+              alt="Selfie selecionada"
               className="h-full w-full object-cover"
             />
-            <div className="pointer-events-none absolute inset-7">
-              <span className="absolute left-0 top-0 h-16 w-16 rounded-tl-[28px] border-l border-t border-ic-gold-light" />
-              <span className="absolute right-0 top-0 h-16 w-16 rounded-tr-[28px] border-r border-t border-ic-gold-light" />
-              <span className="absolute bottom-0 left-0 h-16 w-16 rounded-bl-[28px] border-b border-l border-ic-gold-light" />
-              <span className="absolute bottom-0 right-0 h-16 w-16 rounded-br-[28px] border-b border-r border-ic-gold-light" />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+              <span className="flex h-20 w-20 items-center justify-center rounded-full bg-ic-gold/12 text-ic-gold">
+                <Camera size={30} />
+              </span>
+              <p className="mt-5 font-serif text-[27px] font-semibold leading-8 text-ic-black">
+                Envie sua selfie
+              </p>
+              <p className="mt-2 max-w-[260px] text-[12px] leading-5 text-ic-gray-600">
+                Abra a câmera ou escolha uma foto frontal em seus arquivos.
+              </p>
             </div>
-            {!previewUrl ? (
-              <div className="absolute inset-x-4 bottom-4 rounded-ic-md bg-ic-cream-light/88 px-4 py-3 text-center text-[12px] leading-5 text-ic-gray-600 backdrop-blur">
-                Use uma selfie frontal ou teste com a imagem exemplo.
-              </div>
-            ) : null}
+          )}
+          <div className="pointer-events-none absolute inset-7">
+            <span className="absolute left-0 top-0 h-16 w-16 rounded-tl-[28px] border-l border-t border-ic-gold-light" />
+            <span className="absolute right-0 top-0 h-16 w-16 rounded-tr-[28px] border-r border-t border-ic-gold-light" />
+            <span className="absolute bottom-0 left-0 h-16 w-16 rounded-bl-[28px] border-b border-l border-ic-gold-light" />
+            <span className="absolute bottom-0 right-0 h-16 w-16 rounded-br-[28px] border-b border-r border-ic-gold-light" />
           </div>
-        </label>
+          {previewUrl ? (
+            <button
+              type="button"
+              onClick={() => selectFile(null)}
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-ic-cream-light/92 text-ic-gold shadow-ic-card backdrop-blur"
+              aria-label="Trocar foto"
+            >
+              <RefreshCcw size={17} />
+            </button>
+          ) : null}
+        </div>
         <p className="mt-3 flex items-center justify-center gap-2 text-[12px] text-ic-gray-600">
           <ImagePlus size={14} className="text-ic-gold" />
           A imagem será usada apenas para gerar uma prévia ilustrativa.
@@ -195,11 +342,11 @@ export function SimulationUploadPage() {
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => cameraInputRef.current?.click()}
+            onClick={() => void startCamera()}
             className="flex h-16 items-center justify-center gap-2 rounded-ic-md border border-ic-cream-dark bg-ic-cream-light text-sm font-semibold text-ic-black shadow-ic-card"
           >
             <Camera size={18} className="text-ic-gold" />
-            Tirar foto
+            {isCameraStarting ? "Abrindo..." : "Abrir câmera"}
           </button>
           <button
             type="button"
@@ -207,16 +354,19 @@ export function SimulationUploadPage() {
             className="flex h-16 items-center justify-center gap-2 rounded-ic-md border border-ic-cream-dark bg-ic-cream-light text-sm font-semibold text-ic-black shadow-ic-card"
           >
             <ImageIcon size={18} className="text-ic-gold" />
-            Usar da galeria
+            Escolher foto
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => void loadSampleImage()}
-          className="mx-auto block text-xs font-semibold text-ic-gold-dark"
-        >
-          Usar imagem exemplo da apresentação
-        </button>
+        {cameraOpen ? (
+          <div className="grid grid-cols-2 gap-3">
+            <GoldButton type="button" onClick={capturePhoto}>
+              Capturar foto
+            </GoldButton>
+            <GoldButton type="button" variant="outline" onClick={stopCamera}>
+              Cancelar
+            </GoldButton>
+          </div>
+        ) : null}
       </section>
 
       <label className="flex items-start gap-3 rounded-ic-lg border border-ic-cream-dark bg-ic-cream-light p-4 shadow-ic-card">
