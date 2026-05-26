@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ic-cream: #f5ede0;
+  --ic-cream-light: #faf5ec;
+  --ic-cream-dark: #e8dcc8;
+  --ic-gold: #b89968;
+  --ic-gold-light: #d4b88a;
+  --ic-gold-dark: #8b6f47;
+  --ic-black: #1a1a1a;
+  --ic-charcoal: #2d2620;
+  --ic-white: #ffffff;
+  --ic-gray-600: #6b6258;
+  --ic-gray-400: #9b9388;
+  --ic-success: #7a9166;
+  --ic-warning: #c9a961;
+  color: var(--ic-black);
+  background: var(--ic-cream);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--ic-cream);
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--ic-cream);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+  background: var(--ic-cream);
+}
+
+::selection {
+  background: rgba(184, 153, 104, 0.32);
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.script-accent {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  color: var(--ic-gold-light);
+}
+
+.gold-sheen {
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.6), transparent 25%),
+    linear-gradient(135deg, #f0ddbd 0%, #b89968 44%, #7b6039 100%);
+}
+
+.photo-lux {
+  background:
+    linear-gradient(135deg, rgba(250, 245, 236, 0.75), rgba(45, 38, 32, 0.08)),
+    radial-gradient(circle at 70% 28%, rgba(212, 184, 138, 0.8), transparent 28%),
+    linear-gradient(145deg, #e7d8c3, #aa8a5b);
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(232, 220, 200, 0.68);
+}
+
+.skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.42),
+    transparent
+  );
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    background: var(--ic-cream-dark);
+  }
+
+  #root {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--ic-cream);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
+  }
+}
