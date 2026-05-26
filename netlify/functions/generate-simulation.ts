@@ -100,33 +100,41 @@ export default async (req: Request, _context: Context) => {
     type: image.type || "image/jpeg"
   });
 
-  const response = await client.images.edit({
-    model,
-    image: imageFile,
-    prompt,
-    n: 1,
-    size: "1024x1024",
-    quality: "medium",
-    input_fidelity: "high",
-    output_format: "jpeg"
-  });
+  try {
+    const response = await client.images.edit({
+      model,
+      image: imageFile,
+      prompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "medium",
+      output_format: "jpeg"
+    });
 
-  const b64Json = response.data?.[0]?.b64_json;
+    const b64Json = response.data?.[0]?.b64_json;
 
-  if (!b64Json) {
+    if (!b64Json) {
+      return jsonResponse(
+        { error: "Não foi possível gerar a simulação neste momento." },
+        502
+      );
+    }
+
+    return jsonResponse({
+      simulatedImageUrl: `data:image/jpeg;base64,${b64Json}`,
+      selectedProcedures,
+      intensity,
+      disclaimer,
+      mode: "openai"
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("OpenAI image generation failed:", message);
     return jsonResponse(
       { error: "Não foi possível gerar a simulação neste momento." },
       502
     );
   }
-
-  return jsonResponse({
-    simulatedImageUrl: `data:image/jpeg;base64,${b64Json}`,
-    selectedProcedures,
-    intensity,
-    disclaimer,
-    mode: "openai"
-  });
 };
 
 export const config: Config = {
