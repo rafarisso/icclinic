@@ -1,9 +1,10 @@
-import { CalendarDays, MessageCircle, Sparkles } from "lucide-react";
+import { CalendarDays, Download, MessageCircle, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BeforeAfterSlider } from "@/components/shared/BeforeAfterSlider";
 import { GoldButton } from "@/components/shared/GoldButton";
 import { SimulationDisclaimer } from "@/components/simulation/SimulationDisclaimer";
+import { downloadBeforeAfterImage } from "@/lib/downloadImage";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { simulationService } from "@/services/simulationService";
 import type { SimulationProcedure, SimulationResult } from "@/types";
@@ -21,6 +22,8 @@ const markerMap: Record<
 export function SimulationComparePage() {
   const navigate = useNavigate();
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [isSavingComparison, setIsSavingComparison] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     const latest = simulationService.getLatest();
@@ -35,6 +38,27 @@ export function SimulationComparePage() {
   if (!result) {
     return null;
   }
+
+  const handleSaveComparison = async () => {
+    setDownloadError(null);
+    setIsSavingComparison(true);
+
+    try {
+      await downloadBeforeAfterImage({
+        beforeImageUrl: result.originalImageUrl,
+        afterImageUrl: result.simulatedImageUrl,
+        selectedProcedures: result.selectedProcedures
+      });
+    } catch (error) {
+      setDownloadError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar a comparação."
+      );
+    } finally {
+      setIsSavingComparison(false);
+    }
+  };
 
   return (
     <div className="space-y-5 pt-1">
@@ -82,6 +106,23 @@ export function SimulationComparePage() {
           Resultado natural, harmônico e personalizado para a sua melhor versão.
         </p>
       </section>
+
+      <GoldButton
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled={isSavingComparison}
+        onClick={() => void handleSaveComparison()}
+      >
+        <Download size={17} />
+        {isSavingComparison ? "Preparando imagem..." : "Salvar antes e depois"}
+      </GoldButton>
+
+      {downloadError ? (
+        <p className="rounded-ic-md bg-ic-warning/15 px-4 py-3 text-[12px] leading-5 text-ic-gold-dark">
+          {downloadError}
+        </p>
+      ) : null}
 
       <GoldButton className="w-full" onClick={() => navigate("/agendar")}>
         <CalendarDays size={17} />

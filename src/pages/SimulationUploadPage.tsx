@@ -3,6 +3,7 @@ import {
   Camera,
   Clock3,
   Check,
+  Download,
   Image as ImageIcon,
   ImagePlus,
   Loader2,
@@ -21,6 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { SimulationDisclaimer } from "@/components/simulation/SimulationDisclaimer";
 import { GoldButton } from "@/components/shared/GoldButton";
+import { downloadImageUrl } from "@/lib/downloadImage";
 import { cn } from "@/lib/utils";
 import { simulationService } from "@/services/simulationService";
 import type { SimulationProcedure } from "@/types";
@@ -387,6 +389,19 @@ export function SimulationUploadPage() {
           <ImagePlus size={14} className="text-ic-gold" />
           A imagem será usada apenas para gerar uma prévia ilustrativa.
         </p>
+        {previewUrl ? (
+          <button
+            type="button"
+            onClick={() =>
+              downloadImageUrl(previewUrl, "ic-clinic-selfie-original.jpg")
+            }
+            disabled={isLoading}
+            className="mx-auto mt-3 flex h-10 items-center justify-center gap-2 rounded-ic-pill border border-ic-gold/35 bg-ic-cream-light px-4 text-[12px] font-semibold text-ic-gold-dark shadow-ic-card"
+          >
+            <Download size={14} />
+            Salvar selfie
+          </button>
+        ) : null}
       </section>
 
       <section className="space-y-4">

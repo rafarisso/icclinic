@@ -1,8 +1,9 @@
-import { CalendarDays, Edit3, MessageCircle, Scale } from "lucide-react";
+import { CalendarDays, Download, Edit3, MessageCircle, Scale } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoldButton } from "@/components/shared/GoldButton";
 import { SimulationDisclaimer } from "@/components/simulation/SimulationDisclaimer";
+import { downloadImageUrl } from "@/lib/downloadImage";
 import { cn } from "@/lib/utils";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { simulationService } from "@/services/simulationService";
@@ -79,6 +80,29 @@ export function SimulationResultPage() {
             className="h-[500px] w-full object-cover"
           />
         </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-2.5">
+        <GoldButton
+          type="button"
+          variant="outline"
+          onClick={() =>
+            downloadImageUrl(result.originalImageUrl, "ic-clinic-selfie-original.jpg")
+          }
+        >
+          <Download size={16} />
+          Salvar original
+        </GoldButton>
+        <GoldButton
+          type="button"
+          variant="outline"
+          onClick={() =>
+            downloadImageUrl(result.simulatedImageUrl, "ic-clinic-simulacao.jpg")
+          }
+        >
+          <Download size={16} />
+          Salvar simulação
+        </GoldButton>
       </section>
 
       <section>
