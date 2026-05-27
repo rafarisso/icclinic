@@ -1,7 +1,9 @@
-import { ChevronRight, Search, UserRound } from "lucide-react";
+import { ChevronRight, Plus, Search, UserRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoldButton } from "@/components/shared/GoldButton";
 import { useAdminPatients } from "@/hooks/useAdminPatients";
+import { showToast } from "@/lib/toast";
 
 const statusLabel = {
   active: "Ativa",
@@ -42,6 +44,14 @@ export function AdminPatientsPage() {
           type="search"
         />
       </label>
+
+      <GoldButton
+        className="w-full"
+        onClick={() => showToast("Cadastro de paciente iniciado.")}
+      >
+        <Plus size={17} />
+        Novo paciente
+      </GoldButton>
 
       <section className="space-y-3">
         {isLoading

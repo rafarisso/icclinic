@@ -1,4 +1,9 @@
 import {
+  mockClinicAppointments,
+  mockClinicTasks,
+  mockInventory
+} from "@/data/mockClinicOps";
+import {
   mockAISimulations,
   mockPatientPhotos,
   mockPatientTimeline,
@@ -6,6 +11,9 @@ import {
 } from "@/data/mockPatients";
 import type {
   AISimulationRecord,
+  ClinicAppointment,
+  ClinicTask,
+  InventoryItem,
   Patient,
   PatientPhoto,
   PatientTimelineItem
@@ -66,6 +74,36 @@ export const adminService = {
     }
 
     // TODO: buscar histórico de simulações no Supabase.
+    throw new Error("Backend não configurado");
+  },
+
+  async getAppointments(): Promise<ClinicAppointment[]> {
+    if (USE_MOCK) {
+      await wait();
+      return mockClinicAppointments;
+    }
+
+    // TODO: buscar agenda interna no Supabase.
+    throw new Error("Backend não configurado");
+  },
+
+  async getInventory(): Promise<InventoryItem[]> {
+    if (USE_MOCK) {
+      await wait();
+      return mockInventory;
+    }
+
+    // TODO: buscar estoque no Supabase.
+    throw new Error("Backend não configurado");
+  },
+
+  async getTasks(): Promise<ClinicTask[]> {
+    if (USE_MOCK) {
+      await wait();
+      return mockClinicTasks;
+    }
+
+    // TODO: buscar tarefas operacionais no Supabase.
     throw new Error("Backend não configurado");
   }
 };

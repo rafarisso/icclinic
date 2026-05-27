@@ -26,6 +26,14 @@ export interface Procedure {
   badge?: string;
   featured: boolean;
   longDescription: string;
+  idealFor: string[];
+  benefits: string[];
+  preparation: string[];
+  aftercare: string[];
+  recommendedInterval: string;
+  maintenance: string;
+  attention: string;
+  nextSuggestions: string[];
 }
 
 export type JourneyStepStatus = "completed" | "in-progress" | "future";
@@ -69,6 +77,20 @@ export interface Appointment {
   imageUrl: string;
   status: "scheduled" | "completed" | "cancelled";
   location: string;
+}
+
+export interface ClinicAppointment {
+  id: string;
+  patientId: string;
+  patientName: string;
+  procedureId: string;
+  procedureName: string;
+  date: string;
+  time: string;
+  durationMinutes: number;
+  status: "confirmed" | "pending" | "done" | "cancelled";
+  source: "app" | "clinic";
+  notes: string;
 }
 
 export interface Notification {
@@ -132,4 +154,23 @@ export interface AISimulationRecord {
   intensity: SimulationIntensity;
   disclaimerAccepted: boolean;
   createdAt: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category: "injetavel" | "skin-care" | "descartavel" | "equipamento";
+  quantity: number;
+  minimumQuantity: number;
+  unit: string;
+  status: "ok" | "low" | "critical";
+  lastUpdated: string;
+}
+
+export interface ClinicTask {
+  id: string;
+  title: string;
+  dueDate: string;
+  priority: "alta" | "media" | "baixa";
+  area: "agenda" | "paciente" | "estoque" | "financeiro";
 }

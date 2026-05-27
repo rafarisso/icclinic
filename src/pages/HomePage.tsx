@@ -11,6 +11,7 @@ import { QuickActions } from "@/components/home/QuickActions";
 import { useFeaturedProcedures } from "@/hooks/useProcedures";
 import { useNextAppointment } from "@/hooks/useAppointments";
 import { useUser } from "@/hooks/useUser";
+import { showToast } from "@/lib/toast";
 
 function HomeSkeleton() {
   return (
@@ -112,6 +113,11 @@ export function HomePage() {
             <motion.article
               whileTap={{ scale: 0.98 }}
               key={card.label}
+              onClick={() =>
+                showToast(
+                  `${card.label}: siga as orientações personalizadas enviadas pela equipe IC Clinic.`
+                )
+              }
               className="overflow-hidden rounded-ic-lg border border-ic-gold/18 bg-ic-cream-light shadow-ic-card"
             >
               <div className="flex min-h-[112px] flex-col p-3">
@@ -123,6 +129,12 @@ export function HomePage() {
                 </p>
                 <button
                   type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    showToast(
+                      `${card.label}: a equipe envia instruções específicas para cada procedimento.`
+                    );
+                  }}
                   className="mt-auto flex items-center gap-1 text-[11px] font-semibold text-ic-gold"
                 >
                   Ver orientações
@@ -161,7 +173,7 @@ export function HomePage() {
               whileTap={{ scale: 0.98 }}
               key={procedure.id}
               className="overflow-hidden rounded-ic-lg bg-ic-cream-light shadow-ic-card"
-              onClick={() => navigate(`/agendar?procedure=${procedure.id}`)}
+              onClick={() => navigate(`/procedimentos/${procedure.id}`)}
             >
               <MockImage
                 label={procedure.name}
@@ -178,6 +190,10 @@ export function HomePage() {
                 </p>
                 <button
                   type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    navigate(`/procedimentos/${procedure.id}`);
+                  }}
                   className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-ic-gold"
                 >
                   Conhecer
@@ -191,12 +207,13 @@ export function HomePage() {
 
       <motion.section
         whileTap={{ scale: 0.98 }}
+        onClick={() => navigate("/jornada")}
         className="relative overflow-hidden rounded-ic-xl bg-ic-charcoal p-5 shadow-ic-elevated"
       >
         <div className="absolute inset-y-0 right-0 w-32 opacity-75">
           <MockImage
-            label="Clínica IC"
-            src="/mockups/clinic-banner.jpg"
+            label="Jornada IC Clinic"
+            src="/mockups/journey-banner.jpg"
             className="h-full rounded-none"
           />
         </div>

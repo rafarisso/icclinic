@@ -3,6 +3,7 @@ import { BeforeAfterSlider } from "@/components/shared/BeforeAfterSlider";
 import { GoldButton } from "@/components/shared/GoldButton";
 import { MockImage } from "@/components/shared/MockImage";
 import { useDiary } from "@/hooks/useDiary";
+import { showToast } from "@/lib/toast";
 import { shortDate } from "@/lib/utils";
 
 export function DiaryPage() {
@@ -64,7 +65,12 @@ export function DiaryPage() {
             ))}
       </section>
 
-      <GoldButton className="w-full">
+      <GoldButton
+        className="w-full"
+        onClick={() =>
+          showToast("Registro de evolução iniciado. Envie foto e observação.")
+        }
+      >
         <Plus size={18} />
         Adicionar novo registro
       </GoldButton>

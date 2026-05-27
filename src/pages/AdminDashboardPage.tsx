@@ -1,12 +1,38 @@
-import { CalendarDays, Image, Sparkles, UsersRound } from "lucide-react";
+import {
+  CalendarDays,
+  ClipboardList,
+  Image,
+  PackageCheck,
+  Sparkles,
+  UsersRound
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GoldButton } from "@/components/shared/GoldButton";
 import { useAdminPatients } from "@/hooks/useAdminPatients";
+import {
+  useClinicAppointments,
+  useClinicInventory,
+  useClinicTasks
+} from "@/hooks/useClinicOps";
+import { showToast } from "@/lib/toast";
+
+const priorityLabel = {
+  alta: "Alta",
+  media: "Média",
+  baixa: "Baixa"
+};
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
   const { data: patients } = useAdminPatients();
+  const { data: appointments } = useClinicAppointments();
+  const { data: inventory } = useClinicInventory();
+  const { data: tasks } = useClinicTasks();
   const totalPatients = patients?.length ?? 0;
+  const pendingTasks = tasks?.length ?? 0;
+  const lowStock = inventory?.filter((item) => item.status !== "ok").length ?? 0;
+  const todayAppointments =
+    appointments?.filter((appointment) => appointment.date === "2026-05-28").length ?? 0;
 
   return (
     <div className="space-y-5 pt-1">
@@ -15,20 +41,20 @@ export function AdminDashboardPage() {
           Área interna
         </span>
         <h1 className="mt-2 font-serif text-[34px] font-medium leading-10 text-ic-black">
-          Dashboard da clínica
+          Painel IC Clinic
         </h1>
         <p className="mt-1 text-[13px] leading-5 text-ic-gray-600">
-          Base inicial para acompanhar pacientes, fotos autorizadas, simulações e
-          etapas de tratamento.
+          Controle de agenda, pacientes, fotos autorizadas, simulações, estoque e
+          próximos passos da jornada.
         </p>
       </section>
 
       <section className="grid grid-cols-2 gap-3">
         {[
           { label: "Pacientes", value: totalPatients, icon: UsersRound },
-          { label: "Simulações", value: 1, icon: Sparkles },
-          { label: "Fotos", value: 2, icon: Image },
-          { label: "Follow-ups", value: 1, icon: CalendarDays }
+          { label: "Agenda hoje", value: todayAppointments, icon: CalendarDays },
+          { label: "Estoque baixo", value: lowStock, icon: PackageCheck },
+          { label: "Tarefas", value: pendingTasks, icon: ClipboardList }
         ].map((item) => {
           const Icon = item.icon;
           return (
@@ -48,19 +74,128 @@ export function AdminDashboardPage() {
         })}
       </section>
 
-      <section className="rounded-ic-xl border border-ic-gold/25 bg-ic-cream-light p-4 shadow-ic-card">
-        <h2 className="font-serif text-[24px] font-semibold leading-7">
-          Próxima construção
-        </h2>
-        <p className="mt-2 text-[13px] leading-5 text-ic-gray-600">
-          Esta área será protegida por autenticação e conectada ao Supabase na fase
-          funcional, com consentimento e segurança para fotos de pacientes.
-        </p>
+      <section className="grid grid-cols-2 gap-3">
+        <GoldButton className="w-full" onClick={() => navigate("/admin/pacientes")}>
+          <UsersRound size={17} />
+          Pacientes
+        </GoldButton>
+        <GoldButton className="w-full" onClick={() => navigate("/admin/agenda")}>
+          <CalendarDays size={17} />
+          Agenda
+        </GoldButton>
       </section>
 
-      <GoldButton className="w-full" onClick={() => navigate("/admin/pacientes")}>
-        Ver pacientes
-      </GoldButton>
+      <section className="rounded-ic-xl bg-ic-cream-light p-4 shadow-ic-card">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-serif text-[25px] font-semibold leading-7">
+            Agenda da clínica
+          </h2>
+          <CalendarDays size={18} className="text-ic-gold" />
+        </div>
+        <div className="space-y-2.5">
+          {(appointments ?? []).slice(0, 3).map((appointment) => (
+            <button
+              type="button"
+              key={appointment.id}
+              onClick={() => navigate("/admin/agenda")}
+              className="flex w-full items-center justify-between gap-3 rounded-ic-md border border-ic-cream-dark bg-ic-cream p-3 text-left"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-ic-black">
+                  {appointment.time} · {appointment.patientName}
+                </span>
+                <span className="mt-1 block text-[12px] text-ic-gray-600">
+                  {appointment.procedureName}
+                </span>
+              </span>
+              <span className="rounded-ic-pill bg-ic-gold/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ic-gold-dark">
+                {appointment.status === "confirmed" ? "Confirmado" : "Pendente"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-ic-xl bg-ic-cream-light p-4 shadow-ic-card">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-serif text-[25px] font-semibold leading-7">
+            Pendências do dia
+          </h2>
+          <Sparkles size={18} className="text-ic-gold" />
+        </div>
+        <div className="space-y-2.5">
+          {(tasks ?? []).map((task) => (
+            <button
+              type="button"
+              key={task.id}
+              onClick={() => showToast("Tarefa marcada como visualizada.")}
+              className="flex w-full gap-3 rounded-ic-md border border-ic-cream-dark bg-ic-cream p-3 text-left"
+            >
+              <span className="mt-1 h-2.5 w-2.5 flex-none rounded-full bg-ic-gold" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-ic-black">
+                  {task.title}
+                </span>
+                <span className="mt-1 block text-[11px] uppercase tracking-[0.12em] text-ic-gray-600">
+                  {priorityLabel[task.priority]} · {task.area}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-ic-xl bg-ic-cream-light p-4 shadow-ic-card">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-serif text-[25px] font-semibold leading-7">
+            Estoque inteligente
+          </h2>
+          <PackageCheck size={18} className="text-ic-gold" />
+        </div>
+        <div className="space-y-2.5">
+          {(inventory ?? []).map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              onClick={() => showToast("Reposição sinalizada para a equipe.")}
+              className="flex w-full items-center justify-between gap-3 rounded-ic-md border border-ic-cream-dark bg-ic-cream p-3 text-left"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-ic-black">
+                  {item.name}
+                </span>
+                <span className="mt-1 block text-[12px] text-ic-gray-600">
+                  {item.quantity} {item.unit} em estoque
+                </span>
+              </span>
+              <span
+                className={
+                  item.status === "ok"
+                    ? "rounded-ic-pill bg-ic-success/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ic-success"
+                    : "rounded-ic-pill bg-ic-warning/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ic-gold-dark"
+                }
+              >
+                {item.status === "ok" ? "Ok" : "Repor"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-ic-xl border border-ic-gold/25 bg-ic-charcoal p-4 text-ic-cream-light shadow-ic-elevated">
+        <div className="flex gap-3">
+          <Image size={21} className="mt-1 flex-none text-ic-gold" />
+          <div>
+            <h2 className="font-serif text-[24px] font-semibold leading-7">
+              Banco clínico com LGPD
+            </h2>
+            <p className="mt-2 text-[13px] leading-5 text-ic-cream-light/75">
+              A próxima fase conecta Supabase, autenticação interna, permissões e
+              armazenamento seguro de fotos autorizadas.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

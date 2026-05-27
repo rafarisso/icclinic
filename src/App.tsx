@@ -10,6 +10,11 @@ const ProceduresPage = lazy(() =>
     default: module.ProceduresPage
   }))
 );
+const ProcedureDetailPage = lazy(() =>
+  import("@/pages/ProcedureDetailPage").then((module) => ({
+    default: module.ProcedureDetailPage
+  }))
+);
 const SchedulePage = lazy(() =>
   import("@/pages/SchedulePage").then((module) => ({ default: module.SchedulePage }))
 );
@@ -40,6 +45,11 @@ const SimulationComparePage = lazy(() =>
 const AdminDashboardPage = lazy(() =>
   import("@/pages/AdminDashboardPage").then((module) => ({
     default: module.AdminDashboardPage
+  }))
+);
+const AdminSchedulePage = lazy(() =>
+  import("@/pages/AdminSchedulePage").then((module) => ({
+    default: module.AdminSchedulePage
   }))
 );
 const AdminPatientsPage = lazy(() =>
@@ -80,6 +90,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteFallback />}>
               <ProceduresPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/procedimentos/:id"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <ProcedureDetailPage />
             </Suspense>
           }
         />
@@ -144,6 +162,14 @@ export default function App() {
           element={
             <Suspense fallback={<RouteFallback />}>
               <AdminDashboardPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/agenda"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <AdminSchedulePage />
             </Suspense>
           }
         />

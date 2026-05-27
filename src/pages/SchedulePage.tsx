@@ -10,7 +10,7 @@ import {
 import { useMemo, useState } from "react";
 import { addMonths, format, getDay, getDaysInMonth, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { GoldButton } from "@/components/shared/GoldButton";
 import { MockImage } from "@/components/shared/MockImage";
@@ -18,23 +18,54 @@ import { useProcedure } from "@/hooks/useProcedure";
 import { cn, formatDisplayDate } from "@/lib/utils";
 import { openWhatsApp } from "@/lib/whatsapp";
 
-const availableDays = [4, 6, 8, 13, 14, 15, 16, 21, 22, 23, 28, 29];
 const weekdayLabels = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
-const defaultTimes = ["09:00", "10:30", "14:00", "16:30"];
+const weekdayTimes = ["09:00", "10:30", "14:00", "15:30", "17:00"];
+const saturdayTimes = ["09:00", "10:00", "11:30", "13:00"];
 
-const getTimesForDay = (day: number) => {
-  if (day % 3 === 0) return ["08:30", "10:00", "13:30", "15:30"];
-  if (day % 2 === 0) return defaultTimes;
-  return ["09:30", "11:00", "14:30", "17:00"];
-};
+function startOfToday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function isBusinessDate(date: Date) {
+  const day = getDay(date);
+  return day >= 1 && day <= 6;
+}
+
+function isAvailableDate(date: Date, today: Date) {
+  return isBusinessDate(date) && date.getTime() >= today.getTime();
+}
+
+function getTimesForDate(date: Date) {
+  return getDay(date) === 6 ? saturdayTimes : weekdayTimes;
+}
+
+function getFirstAvailableDay(month: Date, today: Date) {
+  const daysInMonth = getDaysInMonth(month);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(month.getFullYear(), month.getMonth(), day);
+    if (isAvailableDate(date, today)) {
+      return day;
+    }
+  }
+
+  return 1;
+}
 
 export function SchedulePage() {
   const [searchParams] = useSearchParams();
   const procedureId = searchParams.get("procedure");
   const { data: procedure, isLoading } = useProcedure(procedureId);
-  const [visibleMonth, setVisibleMonth] = useState(new Date(2026, 4, 1));
-  const [selectedDay, setSelectedDay] = useState(14);
-  const [selectedTime, setSelectedTime] = useState("10:30");
+  const [today] = useState(() => startOfToday());
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+  const [selectedDay, setSelectedDay] = useState(() =>
+    getFirstAvailableDay(new Date(today.getFullYear(), today.getMonth(), 1), today)
+  );
+  const [selectedTime, setSelectedTime] = useState(() => getTimesForDate(today)[1]);
   const [successOpen, setSuccessOpen] = useState(false);
 
   const monthDays = useMemo(() => {
@@ -45,11 +76,31 @@ export function SchedulePage() {
     return [...blanks, ...days];
   }, [visibleMonth]);
 
-  const times = getTimesForDay(selectedDay);
+  const selectedDateObject = new Date(
+    visibleMonth.getFullYear(),
+    visibleMonth.getMonth(),
+    selectedDay
+  );
+  const times = getTimesForDate(selectedDateObject);
   const selectedProcedureName = procedure?.name ?? "Skin Booster";
-  const selectedDate = `2026-05-${String(selectedDay).padStart(2, "0")}`;
+  const selectedDate = format(selectedDateObject, "yyyy-MM-dd");
   const location =
     "IC Clinic, Av. Manuel Alves Soares, 437, sala 4, Parque Colonial, São Paulo";
+
+  const moveMonth = (direction: "previous" | "next") => {
+    const nextMonth =
+      direction === "previous" ? subMonths(visibleMonth, 1) : addMonths(visibleMonth, 1);
+    const firstAvailableDay = getFirstAvailableDay(nextMonth, today);
+    const nextDate = new Date(
+      nextMonth.getFullYear(),
+      nextMonth.getMonth(),
+      firstAvailableDay
+    );
+
+    setVisibleMonth(nextMonth);
+    setSelectedDay(firstAvailableDay);
+    setSelectedTime(getTimesForDate(nextDate)[0]);
+  };
 
   return (
     <div className="space-y-5 pt-1">
@@ -85,7 +136,7 @@ export function SchedulePage() {
         <div className="flex items-center justify-between">
           <button
             type="button"
-            onClick={() => setVisibleMonth((month) => subMonths(month, 1))}
+            onClick={() => moveMonth("previous")}
             className="flex h-9 w-9 items-center justify-center rounded-full text-ic-gold"
             aria-label="Mês anterior"
           >
@@ -96,7 +147,7 @@ export function SchedulePage() {
           </h2>
           <button
             type="button"
-            onClick={() => setVisibleMonth((month) => addMonths(month, 1))}
+            onClick={() => moveMonth("next")}
             className="flex h-9 w-9 items-center justify-center rounded-full text-ic-gold"
             aria-label="Próximo mês"
           >
@@ -114,16 +165,12 @@ export function SchedulePage() {
             </span>
           ))}
           {monthDays.map((day, index) => {
-            const available =
-              typeof day === "number" &&
-              visibleMonth.getMonth() === 4 &&
-              visibleMonth.getFullYear() === 2026 &&
-              availableDays.includes(day);
-            const selected =
-              typeof day === "number" &&
-              day === selectedDay &&
-              visibleMonth.getMonth() === 4 &&
-              visibleMonth.getFullYear() === 2026;
+            const date =
+              typeof day === "number"
+                ? new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day)
+                : null;
+            const available = Boolean(date && isAvailableDate(date, today));
+            const selected = Boolean(day && day === selectedDay && available);
 
             return (
               <button
@@ -131,10 +178,9 @@ export function SchedulePage() {
                 key={`${day ?? "blank"}-${index}`}
                 disabled={!available}
                 onClick={() => {
-                  if (typeof day === "number") {
-                    setSelectedDay(day);
-                    setSelectedTime(getTimesForDay(day)[0]);
-                  }
+                  if (!date || typeof day !== "number") return;
+                  setSelectedDay(day);
+                  setSelectedTime(getTimesForDate(date)[0]);
                 }}
                 className={cn(
                   "relative flex h-10 items-center justify-center rounded-full text-sm font-medium transition-colors",
@@ -156,9 +202,9 @@ export function SchedulePage() {
 
       <section>
         <p className="text-[13px] font-semibold text-ic-black">
-          Horários disponíveis para {String(selectedDay).padStart(2, "0")}/05
+          Horários disponíveis para {format(selectedDateObject, "dd/MM")}
         </p>
-        <div className="mt-3 grid grid-cols-4 gap-2">
+        <div className="mt-3 grid grid-cols-5 gap-2">
           {times.map((time) => (
             <button
               key={time}
@@ -186,8 +232,8 @@ export function SchedulePage() {
             Pré-confirmação
           </h3>
           <p className="mt-1 text-[12px] leading-5 text-ic-gray-600">
-            Você terá 10 minutos para confirmar. Enviaremos um lembrete inteligente
-            para você.
+            Reservamos este horário por 10 minutos. A confirmação final acontece com a
+            equipe da clínica.
           </p>
         </div>
       </section>
@@ -223,7 +269,7 @@ export function SchedulePage() {
         Confirmar agendamento
       </GoldButton>
       <p className="text-center text-[12px] text-ic-gray-600">
-        Sua experiência começa antes da consulta.
+        Atendimento simulado de segunda a sábado em horário comercial.
       </p>
 
       <AnimatePresence>
@@ -249,7 +295,8 @@ export function SchedulePage() {
                     Agendamento solicitado
                   </h2>
                   <p className="mt-2 text-[13px] leading-5 text-ic-gray-600">
-                    Para fechar a experiência, confirme também pelo WhatsApp da clínica.
+                    A clínica receberá esta intenção de consulta e pode confirmar,
+                    ajustar ou reagendar pelo painel interno.
                   </p>
                 </div>
                 <button

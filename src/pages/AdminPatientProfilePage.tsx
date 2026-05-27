@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { GoldButton } from "@/components/shared/GoldButton";
 import { MockImage } from "@/components/shared/MockImage";
 import { useAdminPatient } from "@/hooks/useAdminPatients";
+import { showToast } from "@/lib/toast";
 import { formatDisplayDate } from "@/lib/utils";
 
 const timelineStatus = {
@@ -115,7 +116,11 @@ export function AdminPatientProfilePage() {
         </div>
       </section>
 
-      <GoldButton variant="outline" className="w-full">
+      <GoldButton
+        variant="outline"
+        className="w-full"
+        onClick={() => showToast("Upload de foto autorizada iniciado.")}
+      >
         <ImagePlus size={17} />
         Adicionar foto autorizada
       </GoldButton>

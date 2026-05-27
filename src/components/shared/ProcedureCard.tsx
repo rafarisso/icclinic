@@ -7,7 +7,6 @@ import { GoldButton } from "@/components/shared/GoldButton";
 import { MockImage } from "@/components/shared/MockImage";
 import { formatCurrency } from "@/lib/utils";
 import { openWhatsApp } from "@/lib/whatsapp";
-import { showToast } from "@/lib/toast";
 
 interface ProcedureCardProps {
   procedure: Procedure;
@@ -19,7 +18,7 @@ export function ProcedureCard({ procedure }: ProcedureCardProps) {
   return (
     <motion.article
       whileTap={{ scale: 0.98 }}
-      onClick={() => showToast("Detalhes do procedimento em breve.")}
+      onClick={() => navigate(`/procedimentos/${procedure.id}`)}
       className="rounded-ic-lg border border-ic-cream-dark bg-ic-cream-light p-3 shadow-ic-card"
     >
       <div className="flex gap-3">
