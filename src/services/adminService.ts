@@ -1,5 +1,6 @@
 import {
   mockClinicAppointments,
+  mockClinicStats,
   mockClinicTasks,
   mockInventory
 } from "@/data/mockClinicOps";
@@ -12,6 +13,7 @@ import {
 import type {
   AISimulationRecord,
   ClinicAppointment,
+  ClinicStats,
   ClinicTask,
   InventoryItem,
   Patient,
@@ -104,6 +106,16 @@ export const adminService = {
     }
 
     // TODO: buscar tarefas operacionais no Supabase.
+    throw new Error("Backend não configurado");
+  },
+
+  async getStats(): Promise<ClinicStats> {
+    if (USE_MOCK) {
+      await wait();
+      return mockClinicStats;
+    }
+
+    // TODO: buscar eventos de acesso e simulações no Supabase ou analytics.
     throw new Error("Backend não configurado");
   }
 };

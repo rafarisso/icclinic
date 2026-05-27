@@ -6,7 +6,7 @@ import type {
 
 const STORAGE_KEY = "ic-clinic-ai-simulation";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
-const NORMALIZED_IMAGE_MAX_DIMENSION = 1400;
+const NORMALIZED_IMAGE_SIZE = 1024;
 const NORMALIZED_IMAGE_QUALITY_STEPS = [0.9, 0.82, 0.74, 0.66] as const;
 const POLL_INTERVAL_MS = 2500;
 const POLL_TIMEOUT_MS = 150000;
@@ -115,24 +115,33 @@ async function prepareImageForSimulation(file: File) {
 
   const dataUrl = await readFileAsDataUrl(file);
   const image = await loadImage(dataUrl);
-  const largestSide = Math.max(image.naturalWidth, image.naturalHeight);
-  const scale =
-    largestSide > NORMALIZED_IMAGE_MAX_DIMENSION
-      ? NORMALIZED_IMAGE_MAX_DIMENSION / largestSide
-      : 1;
-  const width = Math.max(1, Math.round(image.naturalWidth * scale));
-  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+  const cropX = Math.max(0, Math.round((image.naturalWidth - sourceSize) / 2));
+  const cropY = Math.max(
+    0,
+    Math.round((image.naturalHeight - sourceSize) * 0.38)
+  );
 
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = NORMALIZED_IMAGE_SIZE;
+  canvas.height = NORMALIZED_IMAGE_SIZE;
 
   const context = canvas.getContext("2d");
   if (!context) {
     throw new Error("Não foi possível preparar a imagem para envio.");
   }
 
-  context.drawImage(image, 0, 0, width, height);
+  context.drawImage(
+    image,
+    cropX,
+    cropY,
+    sourceSize,
+    sourceSize,
+    0,
+    0,
+    NORMALIZED_IMAGE_SIZE,
+    NORMALIZED_IMAGE_SIZE
+  );
 
   let smallestFile: File | null = null;
 
@@ -148,10 +157,6 @@ async function prepareImageForSimulation(file: File) {
     if (jpegFile.size <= MAX_IMAGE_SIZE_BYTES) {
       return jpegFile;
     }
-  }
-
-  if (file.size <= MAX_IMAGE_SIZE_BYTES) {
-    return file;
   }
 
   throw new Error(

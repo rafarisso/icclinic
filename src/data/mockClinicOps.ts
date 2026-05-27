@@ -1,4 +1,16 @@
-import type { ClinicAppointment, ClinicTask, InventoryItem } from "@/types";
+import type {
+  ClinicAppointment,
+  ClinicStats,
+  ClinicTask,
+  InventoryItem
+} from "@/types";
+
+export const mockClinicStats: ClinicStats = {
+  dailyAccesses: 87,
+  simulationsToday: 14,
+  simulationsTotal: 126,
+  simulationConversionRate: 42
+};
 
 export const mockClinicAppointments: ClinicAppointment[] = [
   {

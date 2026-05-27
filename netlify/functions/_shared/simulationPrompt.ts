@@ -56,6 +56,7 @@ export function buildSimulationPrompt(
 
   return [
     "Edite a selfie enviada mantendo a identidade facial da pessoa, idade aparente, expressao, cabelo, roupa e enquadramento.",
+    "Preserve exatamente o mesmo corte, proporcao, posicao da cabeca e alinhamento central para comparacao antes e depois.",
     "Gere uma simulacao estetica ilustrativa, natural e sutil, como previa para consulta em clinica de estetica premium.",
     `Aplicar apenas os procedimentos selecionados: ${selected}.`,
     `Intensidade: ${intensityInstructions[intensity]}`,

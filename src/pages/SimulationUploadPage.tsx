@@ -8,7 +8,8 @@ import {
   ImagePlus,
   Loader2,
   RefreshCcw,
-  Sparkles
+  Sparkles,
+  X
 } from "lucide-react";
 import {
   ChangeEvent,
@@ -356,8 +357,28 @@ export function SimulationUploadPage() {
               <RefreshCcw size={17} />
             </button>
           ) : null}
+          {cameraOpen ? (
+            <div className="absolute inset-x-4 bottom-4 z-20 grid grid-cols-[1fr_auto] gap-2">
+              <GoldButton
+                type="button"
+                onClick={capturePhoto}
+                className="h-[52px] min-h-0 rounded-ic-pill border border-ic-cream-light/45 text-[14px] shadow-ic-elevated"
+              >
+                <Camera size={17} />
+                Capturar foto
+              </GoldButton>
+              <button
+                type="button"
+                onClick={stopCamera}
+                className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-ic-cream-light/55 bg-ic-cream-light/92 text-ic-gold shadow-ic-elevated backdrop-blur"
+                aria-label="Cancelar câmera"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ) : null}
           {isLoading ? (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-ic-black/58 px-6 text-center text-ic-white backdrop-blur-[2px]">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-ic-black/58 px-6 text-center text-ic-white backdrop-blur-[2px]">
               <div className="w-full max-w-[285px] rounded-ic-lg border border-ic-gold/35 bg-ic-black/56 p-5 shadow-ic-card">
                 <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-ic-gold/40 bg-ic-gold/18 text-ic-gold">
                   <Loader2 size={24} className="animate-spin" />
@@ -462,16 +483,6 @@ export function SimulationUploadPage() {
             Escolher foto
           </button>
         </div>
-        {cameraOpen ? (
-          <div className="grid grid-cols-2 gap-3">
-            <GoldButton type="button" onClick={capturePhoto}>
-              Capturar foto
-            </GoldButton>
-            <GoldButton type="button" variant="outline" onClick={stopCamera}>
-              Cancelar
-            </GoldButton>
-          </div>
-        ) : null}
       </section>
 
       <label className="flex items-start gap-3 rounded-ic-lg border border-ic-cream-dark bg-ic-cream-light p-4 shadow-ic-card">

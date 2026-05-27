@@ -9,3 +9,6 @@ export const useClinicInventory = () =>
 
 export const useClinicTasks = () =>
   useAsyncResource(() => adminService.getTasks(), []);
+
+export const useClinicStats = () =>
+  useAsyncResource(() => adminService.getStats(), []);

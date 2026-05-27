@@ -2,6 +2,10 @@ import { useRef, useState } from "react";
 import { ChevronsLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const MIN_POSITION = 0;
+const MAX_POSITION = 100;
+const START_POSITION = 50;
+
 interface BeforeAfterSliderProps {
   beforeLabel?: string;
   afterLabel?: string;
@@ -18,14 +22,14 @@ export function BeforeAfterSlider({
   className
 }: BeforeAfterSliderProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [position, setPosition] = useState(52);
+  const [position, setPosition] = useState(START_POSITION);
   const [dragging, setDragging] = useState(false);
 
   const updatePosition = (clientX: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     const percent = ((clientX - rect.left) / rect.width) * 100;
-    setPosition(Math.min(92, Math.max(8, percent)));
+    setPosition(Math.min(MAX_POSITION, Math.max(MIN_POSITION, percent)));
   };
 
   return (
@@ -45,6 +49,33 @@ export function BeforeAfterSlider({
       }}
       onPointerUp={() => setDragging(false)}
       onPointerCancel={() => setDragging(false)}
+      onDoubleClick={() => setPosition(START_POSITION)}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setPosition((current) => Math.max(MIN_POSITION, current - 2));
+        }
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setPosition((current) => Math.min(MAX_POSITION, current + 2));
+        }
+
+        if (event.key === "Home") {
+          event.preventDefault();
+          setPosition(MIN_POSITION);
+        }
+
+        if (event.key === "End") {
+          event.preventDefault();
+          setPosition(MAX_POSITION);
+        }
+
+        if (event.key === " " || event.key === "Enter") {
+          event.preventDefault();
+          setPosition(START_POSITION);
+        }
+      }}
       role="slider"
       aria-valuemin={0}
       aria-valuemax={100}
@@ -55,7 +86,7 @@ export function BeforeAfterSlider({
         <img
           src={afterImageUrl}
           alt={afterLabel}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
       ) : (
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_28%,rgba(250,245,236,0.55),transparent_28%),linear-gradient(135deg,#b6a08a,#2d2620)]" />
@@ -68,7 +99,7 @@ export function BeforeAfterSlider({
           <img
             src={beforeImageUrl}
             alt={beforeLabel}
-            className="h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
         ) : (
           <div className="h-full w-full bg-[radial-gradient(circle_at_38%_35%,rgba(250,245,236,0.68),transparent_28%),linear-gradient(135deg,#eadccc,#9a7752)]" />

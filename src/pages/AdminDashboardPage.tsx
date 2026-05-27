@@ -1,8 +1,10 @@
 import {
   CalendarDays,
   ClipboardList,
+  Eye,
   Image,
   PackageCheck,
+  ScanFace,
   Sparkles,
   UsersRound
 } from "lucide-react";
@@ -12,6 +14,7 @@ import { useAdminPatients } from "@/hooks/useAdminPatients";
 import {
   useClinicAppointments,
   useClinicInventory,
+  useClinicStats,
   useClinicTasks
 } from "@/hooks/useClinicOps";
 import { showToast } from "@/lib/toast";
@@ -28,11 +31,16 @@ export function AdminDashboardPage() {
   const { data: appointments } = useClinicAppointments();
   const { data: inventory } = useClinicInventory();
   const { data: tasks } = useClinicTasks();
+  const { data: stats } = useClinicStats();
   const totalPatients = patients?.length ?? 0;
   const pendingTasks = tasks?.length ?? 0;
   const lowStock = inventory?.filter((item) => item.status !== "ok").length ?? 0;
   const todayAppointments =
     appointments?.filter((appointment) => appointment.date === "2026-05-28").length ?? 0;
+  const dailyAccesses = stats?.dailyAccesses ?? 0;
+  const simulationsToday = stats?.simulationsToday ?? 0;
+  const simulationsTotal = stats?.simulationsTotal ?? 0;
+  const simulationConversionRate = stats?.simulationConversionRate ?? 0;
 
   return (
     <div className="space-y-5 pt-1">
@@ -51,10 +59,12 @@ export function AdminDashboardPage() {
 
       <section className="grid grid-cols-2 gap-3">
         {[
+          { label: "Acessos hoje", value: dailyAccesses, icon: Eye },
+          { label: "Simulações hoje", value: simulationsToday, icon: ScanFace },
+          { label: "Simulações total", value: simulationsTotal, icon: Sparkles },
           { label: "Pacientes", value: totalPatients, icon: UsersRound },
           { label: "Agenda hoje", value: todayAppointments, icon: CalendarDays },
-          { label: "Estoque baixo", value: lowStock, icon: PackageCheck },
-          { label: "Tarefas", value: pendingTasks, icon: ClipboardList }
+          { label: "Estoque baixo", value: lowStock, icon: PackageCheck }
         ].map((item) => {
           const Icon = item.icon;
           return (
@@ -72,6 +82,22 @@ export function AdminDashboardPage() {
             </article>
           );
         })}
+      </section>
+
+      <section className="rounded-ic-xl border border-ic-gold/20 bg-ic-cream-light p-4 shadow-ic-card">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-[24px] font-semibold leading-7">
+              Funil da simulação
+            </h2>
+            <p className="mt-1 text-[12px] leading-5 text-ic-gray-600">
+              Acompanhamento das visitantes que chegam pela prévia com IA.
+            </p>
+          </div>
+          <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-ic-gold/12 font-serif text-[24px] font-semibold text-ic-gold-dark">
+            {simulationConversionRate}%
+          </span>
+        </div>
       </section>
 
       <section className="grid grid-cols-2 gap-3">
@@ -121,7 +147,10 @@ export function AdminDashboardPage() {
           <h2 className="font-serif text-[25px] font-semibold leading-7">
             Pendências do dia
           </h2>
-          <Sparkles size={18} className="text-ic-gold" />
+          <span className="flex items-center gap-2 rounded-ic-pill bg-ic-gold/12 px-3 py-1 text-[11px] font-semibold text-ic-gold-dark">
+            <ClipboardList size={14} />
+            {pendingTasks}
+          </span>
         </div>
         <div className="space-y-2.5">
           {(tasks ?? []).map((task) => (

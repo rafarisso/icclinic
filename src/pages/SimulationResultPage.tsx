@@ -128,8 +128,8 @@ export function SimulationResultPage() {
           ))}
         </div>
         <p className="mt-2 text-[11px] leading-4 text-ic-gray-600">
-          Para o MVP, a geração usa Natural como padrão. As demais opções ficam
-          preparadas para refinamento posterior.
+          Natural é o padrão desta prévia. As demais intensidades ficam
+          disponíveis para refinamento na avaliação.
         </p>
       </section>
 

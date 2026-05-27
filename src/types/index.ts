@@ -174,3 +174,10 @@ export interface ClinicTask {
   priority: "alta" | "media" | "baixa";
   area: "agenda" | "paciente" | "estoque" | "financeiro";
 }
+
+export interface ClinicStats {
+  dailyAccesses: number;
+  simulationsToday: number;
+  simulationsTotal: number;
+  simulationConversionRate: number;
+}
