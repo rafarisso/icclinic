@@ -1,9 +1,11 @@
 import {
   ArrowRight,
   Camera,
+  Clock3,
   Check,
   Image as ImageIcon,
   ImagePlus,
+  Loader2,
   RefreshCcw,
   Sparkles
 } from "lucide-react";
@@ -30,6 +32,43 @@ const procedures: Array<{ id: SimulationProcedure; label: string }> = [
   { id: "limpeza", label: "Limpeza de pele" }
 ];
 
+const loadingMessages = [
+  {
+    title: "Preparando sua selfie",
+    body: "Ajustando luz, enquadramento e qualidade da imagem."
+  },
+  {
+    title: "Preservando seus traços",
+    body: "A simulação mantém identidade facial, expressão e naturalidade."
+  },
+  {
+    title: "Aplicando os pontos escolhidos",
+    body: "Botox, pele, nariz ou lábios são tratados de forma sutil."
+  },
+  {
+    title: "Refinando a prévia visual",
+    body: "Buscando um resultado delicado, realista e harmônico."
+  },
+  {
+    title: "Finalizando a simulação",
+    body: "A imagem pode levar mais um pouco em horários de maior uso."
+  }
+];
+
+function formatElapsedTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(
+    2,
+    "0"
+  )}`;
+}
+
+function getLoadingMessageIndex(seconds: number) {
+  return Math.min(loadingMessages.length - 1, Math.floor(seconds / 10));
+}
+
 export function SimulationUploadPage() {
   const navigate = useNavigate();
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
@@ -44,12 +83,16 @@ export function SimulationUploadPage() {
   const [selected, setSelected] = useState<SimulationProcedure[]>(["limpeza"]);
   const [consent, setConsent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = useMemo(
     () => Boolean(file && selected.length > 0 && consent && !isLoading),
     [consent, file, isLoading, selected.length]
   );
+  const currentLoadingMessage =
+    loadingMessages[getLoadingMessageIndex(elapsedSeconds)];
+  const loadingProgress = Math.min(94, 12 + elapsedSeconds * 2);
 
   const stopCamera = () => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -77,6 +120,22 @@ export function SimulationUploadPage() {
       }
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setElapsedSeconds(0);
+      return;
+    }
+
+    const startedAt = Date.now();
+    setElapsedSeconds(0);
+
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [isLoading]);
 
   const toggleProcedure = (procedure: SimulationProcedure) => {
     setSelected((current) =>
@@ -288,11 +347,40 @@ export function SimulationUploadPage() {
             <button
               type="button"
               onClick={() => selectFile(null)}
+              disabled={isLoading}
               className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-ic-cream-light/92 text-ic-gold shadow-ic-card backdrop-blur"
               aria-label="Trocar foto"
             >
               <RefreshCcw size={17} />
             </button>
+          ) : null}
+          {isLoading ? (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-ic-black/58 px-6 text-center text-ic-white backdrop-blur-[2px]">
+              <div className="w-full max-w-[285px] rounded-ic-lg border border-ic-gold/35 bg-ic-black/56 p-5 shadow-ic-card">
+                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-ic-gold/40 bg-ic-gold/18 text-ic-gold">
+                  <Loader2 size={24} className="animate-spin" />
+                </span>
+                <p className="mt-4 font-serif text-[25px] leading-7">
+                  {currentLoadingMessage.title}
+                </p>
+                <p className="mt-2 text-[12px] leading-5 text-ic-white/78">
+                  {currentLoadingMessage.body}
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-[13px] font-semibold text-ic-gold-light">
+                  <Clock3 size={15} />
+                  {formatElapsedTime(elapsedSeconds)}
+                </div>
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-ic-white/18">
+                  <div
+                    className="h-full rounded-full bg-ic-gold transition-all duration-700"
+                    style={{ width: `${loadingProgress}%` }}
+                  />
+                </div>
+                <p className="mt-3 text-[11px] leading-4 text-ic-white/62">
+                  Mantenha esta página aberta enquanto a prévia é gerada.
+                </p>
+              </div>
+            </div>
           ) : null}
         </div>
         <p className="mt-3 flex items-center justify-center gap-2 text-[12px] text-ic-gray-600">
@@ -343,6 +431,7 @@ export function SimulationUploadPage() {
           <button
             type="button"
             onClick={() => void startCamera()}
+            disabled={isLoading}
             className="flex h-16 items-center justify-center gap-2 rounded-ic-md border border-ic-cream-dark bg-ic-cream-light text-sm font-semibold text-ic-black shadow-ic-card"
           >
             <Camera size={18} className="text-ic-gold" />
@@ -351,6 +440,7 @@ export function SimulationUploadPage() {
           <button
             type="button"
             onClick={() => galleryInputRef.current?.click()}
+            disabled={isLoading}
             className="flex h-16 items-center justify-center gap-2 rounded-ic-md border border-ic-cream-dark bg-ic-cream-light text-sm font-semibold text-ic-black shadow-ic-card"
           >
             <ImageIcon size={18} className="text-ic-gold" />
@@ -391,7 +481,9 @@ export function SimulationUploadPage() {
       ) : null}
 
       <GoldButton className="w-full" disabled={!canSubmit}>
-        {isLoading ? "Gerando prévia..." : "Continuar"}
+        {isLoading
+          ? `Gerando prévia ${formatElapsedTime(elapsedSeconds)}`
+          : "Continuar"}
         {!isLoading ? <ArrowRight size={17} /> : null}
       </GoldButton>
     </form>

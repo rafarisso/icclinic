@@ -6,6 +6,8 @@ import type {
 
 const STORAGE_KEY = "ic-clinic-ai-simulation";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const NORMALIZED_IMAGE_MAX_DIMENSION = 1400;
+const NORMALIZED_IMAGE_QUALITY_STEPS = [0.9, 0.82, 0.74, 0.66] as const;
 const POLL_INTERVAL_MS = 2500;
 const POLL_TIMEOUT_MS = 150000;
 
@@ -69,6 +71,94 @@ function readFileAsDataUrl(file: File) {
     reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
     reader.readAsDataURL(file);
   });
+}
+
+function loadImage(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () =>
+      reject(
+        new Error(
+          "Não foi possível preparar a imagem. Use uma foto em JPG, PNG ou WebP."
+        )
+      );
+    image.src = dataUrl;
+  });
+}
+
+function canvasToJpegFile(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<File | null>((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          resolve(null);
+          return;
+        }
+
+        resolve(
+          new File([blob], "selfie-ic-clinic.jpg", {
+            type: "image/jpeg"
+          })
+        );
+      },
+      "image/jpeg",
+      quality
+    );
+  });
+}
+
+async function prepareImageForSimulation(file: File) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Escolha um arquivo de imagem válido.");
+  }
+
+  const dataUrl = await readFileAsDataUrl(file);
+  const image = await loadImage(dataUrl);
+  const largestSide = Math.max(image.naturalWidth, image.naturalHeight);
+  const scale =
+    largestSide > NORMALIZED_IMAGE_MAX_DIMENSION
+      ? NORMALIZED_IMAGE_MAX_DIMENSION / largestSide
+      : 1;
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Não foi possível preparar a imagem para envio.");
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+
+  let smallestFile: File | null = null;
+
+  for (const quality of NORMALIZED_IMAGE_QUALITY_STEPS) {
+    const jpegFile = await canvasToJpegFile(canvas, quality);
+
+    if (!jpegFile) {
+      continue;
+    }
+
+    smallestFile = jpegFile;
+
+    if (jpegFile.size <= MAX_IMAGE_SIZE_BYTES) {
+      return jpegFile;
+    }
+  }
+
+  if (file.size <= MAX_IMAGE_SIZE_BYTES) {
+    return file;
+  }
+
+  throw new Error(
+    smallestFile
+      ? "A foto ainda ficou pesada após a otimização. Escolha uma imagem menor."
+      : "Não foi possível preparar a imagem. Use uma foto em JPG, PNG ou WebP."
+  );
 }
 
 function createClientFallbackSimulation() {
@@ -149,17 +239,14 @@ export const simulationService = {
     intensity: SimulationIntensity;
     consent: boolean;
   }): Promise<SimulationResult> {
-    if (params.file.size > MAX_IMAGE_SIZE_BYTES) {
-      throw new Error("A imagem precisa ter até 5 MB.");
-    }
-
-    const originalImageUrl = await readFileAsDataUrl(params.file);
+    const simulationFile = await prepareImageForSimulation(params.file);
+    const originalImageUrl = await readFileAsDataUrl(simulationFile);
     const selectedProcedures = params.procedures.map(
       (procedure) => procedureLabels[procedure]
     );
 
     const formData = new FormData();
-    formData.append("image", params.file);
+    formData.append("image", simulationFile);
     formData.append("intensity", params.intensity);
     formData.append("consent", String(params.consent));
     params.procedures.forEach((procedure) => formData.append("procedures", procedure));
