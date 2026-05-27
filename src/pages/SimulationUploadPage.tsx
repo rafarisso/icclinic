@@ -480,7 +480,7 @@ export function SimulationUploadPage() {
         </p>
       ) : null}
 
-      <GoldButton className="w-full" disabled={!canSubmit}>
+      <GoldButton type="submit" className="w-full" disabled={!canSubmit}>
         {isLoading
           ? `Gerando prévia ${formatElapsedTime(elapsedSeconds)}`
           : "Continuar"}
